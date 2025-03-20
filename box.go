@@ -5,6 +5,10 @@ import (
 )
 
 type Box struct {
+	tcell.Screen
+
+	Text string
+
 	x, y, width, height int
 
 	innerX, innerY, innerWidth, innerHeight int
@@ -12,13 +16,21 @@ type Box struct {
 	backgroundColor tcell.Color
 }
 
-func NewBox() *Box {
+func NewBox(screen tcell.Screen) *Box {
 	box := &Box{
 		width:           15,
 		height:          15,
 		backgroundColor: tcell.GetColor("grey"),
 	}
+	box.Screen = screen
 	return box
+}
+
+func (b *Box) SetRect(width int, height int, y int, x int) {
+	b.width = width
+	b.height = height
+	b.x = x
+	b.y = y
 }
 
 func (b *Box) Draw(screen tcell.Screen) {
@@ -28,6 +40,15 @@ func (b *Box) Draw(screen tcell.Screen) {
 			screen.SetContent(x, y, ' ', nil, background)
 		}
 	}
-	screen.SetContent(1, 1, 'H', nil, background)
-	screen.SetContent(2, 1, 'e', nil, background)
+
+	if b.Text != "" {
+		for i, char := range b.Text {
+			b.Screen.SetContent(i, b.y, char, nil, background)
+		}
+	}
+}
+
+func (b *Box) AddText(text string) *Box {
+	b.Text = text
+	return b
 }

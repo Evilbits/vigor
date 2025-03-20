@@ -41,8 +41,16 @@ func main() {
 
 	screen.Clear()
 
-	root := NewGrid()
-	root.Draw(screen)
+	rootGrid := NewGrid()
+	rootBox := NewBox(screen)
+	rootBox.AddText("Hello world!")
+
+	rootBoxTwo := NewBox(screen)
+	rootBoxTwo.AddText("Hello world from the other side")
+
+	rootGrid.AddItem(rootBox, 1)
+	rootGrid.AddItem(rootBoxTwo, 2)
+	rootGrid.Draw(screen)
 
 	startEventLoop(screen)
 }
