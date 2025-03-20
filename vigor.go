@@ -1,58 +1,48 @@
 package main
 
 import (
-	"github.com/rivo/tview"
+	"log"
+	"os"
+
+	"github.com/gdamore/tcell/v2"
 )
 
-func buildTextArea() (*tview.TextArea, *tview.Box) {
-	textArea := tview.NewTextArea().SetPlaceholder("Enter text here")
-	textAreaBox := textArea.SetTitle("Vigor").
-		SetBorder(true)
-
-	return textArea, textAreaBox
-}
-
-func buildPosition(textArea *tview.TextArea) *tview.TextView {
-	position := tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignRight)
-
-	updatePosFunc := func() {
-		position.SetText(getCursorPosStr(textArea))
+func startEventLoop(screen tcell.Screen) {
+	quit := func() {
+		screen.Fini()
+		os.Exit(0)
 	}
-	textArea.SetMovedFunc(updatePosFunc)
-	updatePosFunc()
 
-	return position
-}
+	for {
+		screen.Show()
 
-func buildStateArea() *tview.TextView {
-	state := tview.NewTextView().
-		SetDynamicColors(true).
-		SetTextAlign(tview.AlignLeft).
-		SetText("Visual")
+		event := screen.PollEvent()
 
-	return state
-}
-
-func buildMainView() *tview.Grid {
-	textArea, textAreaBox := buildTextArea()
-	stateArea := buildStateArea()
-	positionArea := buildPosition(textArea)
-
-	mainLayout := tview.NewGrid().
-		SetRows(0, 1).
-		AddItem(textAreaBox, 0, 0, 1, 2, 0, 0, true).
-		AddItem(stateArea, 1, 0, 1, 1, 0, 0, false).
-		AddItem(positionArea, 1, 1, 1, 1, 0, 0, false)
-	return mainLayout
+		switch event := event.(type) {
+		case *tcell.EventResize:
+			screen.Sync()
+		case *tcell.EventKey:
+			if event.Key() == tcell.KeyEscape || event.Key() == tcell.KeyCtrlC {
+				quit()
+			}
+		}
+	}
 }
 
 func main() {
-	app := tview.NewApplication()
-	mainView := buildMainView()
-
-	if err := app.SetRoot(mainView, true).EnableMouse(true).Run(); err != nil {
-		panic(err)
+	screen, err := tcell.NewScreen()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	if err := screen.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	screen.Clear()
+
+	root := NewGrid()
+	root.Draw(screen)
+
+	startEventLoop(screen)
 }
