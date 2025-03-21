@@ -1,11 +1,5 @@
 package ui
 
-import (
-	"fmt"
-
-	"github.com/gdamore/tcell/v2"
-)
-
 type gridItem struct {
 	Item *Box
 }
@@ -40,8 +34,7 @@ func (gr *Grid) AddItem(item *Box) *Grid {
 	return gr
 }
 
-// TODO: Implement height based on row values
-func (gr *Grid) Draw(screen tcell.Screen, debug bool) {
+func (gr *Grid) Draw(screen *Screen) {
 	screenWidth, screenHeight := screen.Size()
 
 	// Start rendering at yPos 0
@@ -74,14 +67,8 @@ func (gr *Grid) Draw(screen tcell.Screen, debug bool) {
 		}
 
 		item := gridItem.Item
-		// Debug
-		itemOrigText := item.Text
-		if debug {
-			item.AddText(fmt.Sprintf("(%d, %d): %v", calculatedHeight, screenWidth, item.Text))
-		}
 		item.SetRect(screenWidth, calculatedHeight, nextYPos, 0)
 		item.Draw(screen)
-		item.AddText(itemOrigText)
 
 		// Move down yPos so next item can render from there
 		nextYPos += calculatedHeight

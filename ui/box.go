@@ -5,7 +5,7 @@ import (
 )
 
 type Box struct {
-	tcell.Screen
+	*Screen
 
 	Text string
 
@@ -16,7 +16,7 @@ type Box struct {
 	backgroundColor tcell.Color
 }
 
-func NewBox(screen tcell.Screen) *Box {
+func NewBox(screen *Screen) *Box {
 	box := &Box{
 		width:           15,
 		height:          15,
@@ -39,11 +39,11 @@ func (b *Box) SetRect(width int, height int, y int, x int) {
 	b.y = y
 }
 
-func (b *Box) Draw(screen tcell.Screen) {
+func (b *Box) Draw(screen *Screen) {
 	background := tcell.StyleDefault.Background(b.backgroundColor)
 	for y := b.y; y < b.y+b.height; y++ {
 		for x := b.x; x < b.x+b.width; x++ {
-			screen.SetContent(x, y, ' ', nil, background)
+			screen.WriteChar(x, y, ' ', nil, background)
 		}
 	}
 
@@ -57,7 +57,7 @@ func (b *Box) Draw(screen tcell.Screen) {
 				x = 0
 				continue
 			}
-			b.Screen.SetContent(x, y, char, nil, background)
+			screen.WriteChar(x, y, char, nil, background)
 			x++
 		}
 	}
