@@ -109,6 +109,11 @@ func (ta *TextArea) moveCursor(moveX int, moveY int, screen *Screen) {
 		return
 	}
 
+	// Don't allow going outside Y axis of text
+	if ta.cursorY+moveY >= len(ta.TextContent) {
+		return
+	}
+
 	prevX := ta.cursorX
 	prevY := ta.cursorY
 	ta.cursorX += moveX
