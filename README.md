@@ -23,6 +23,7 @@ To run from source simply execute
 ## TODO
 There are lots of features that still need to be implemented. This is a non-exhaustive list:
 * Reading a config when initiating the `Editor`
+* Linenumbers in `TextArea`
 * Inserting and removing characters
 * Navigating between files
 * Saving to disk

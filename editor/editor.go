@@ -19,13 +19,13 @@ func NewEditor() *Editor {
 	return editor
 }
 
-func readFile(path string) string {
+func readFile(path string) []string {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 
-	return string(data[:])
+	return strings.Split(string(data[:]), fmt.Sprint(ui.LF))
 }
 
 func filePathToFileName(filepath string) string {
@@ -45,7 +45,7 @@ func (editor *Editor) Start(filepath string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	textArea.AddText(text)
+	textArea.TextContent = text
 
 	statusBar, err := grid.GetStatusBar()
 	if err != nil {

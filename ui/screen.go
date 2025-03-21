@@ -84,14 +84,14 @@ func (screen *Screen) StartEventLoop() {
 			tScreen.Sync()
 			screen.Grid.Draw(screen)
 		case *tcell.EventKey:
-			if event.Key() == tcell.KeyEscape || event.Key() == tcell.KeyCtrlC {
+			if event.Key() == tcell.KeyCtrlC {
 				quit()
 			}
 			focusedArea, err := screen.Grid.GetFocusedEditableArea()
 			if err != nil {
 				log.Fatal(err)
 			}
-			focusedArea.HandleKey(event.Rune(), screen)
+			focusedArea.HandleKey(event, screen)
 		}
 		screen.Grid.Draw(screen)
 	}

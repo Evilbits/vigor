@@ -69,6 +69,7 @@ func (b *Box) AddText(text string) {
 	b.Text = text
 }
 
-func (b *Box) HandleKey(char rune, screen *Screen) {
+// TODO: Find a way to remove
+func (b *Box) HandleKey(event *tcell.EventKey, screen *Screen) {
 	// Not implemented
 }

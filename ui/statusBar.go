@@ -1,6 +1,10 @@
 package ui
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 type StatusBar struct {
 	*Box
@@ -25,6 +29,9 @@ func (sb *StatusBar) Draw(screen *Screen) {
 	sb.Box.Draw(screen)
 	statusBarStr += fmt.Sprintf("(%v, %v)", sb.TextArea.cursorX, sb.TextArea.cursorY)
 
+	statusBarStr += statusBarSeparator()
+	statusBarStr += fmt.Sprintf("[%v]", sb.GetMode())
+
 	if sb.ActiveFileName != "" {
 		statusBarStr += statusBarSeparator()
 		statusBarStr += sb.ActiveFileName
@@ -37,6 +44,7 @@ func (sb *StatusBar) AddText(text string) {
 	sb.Text = text
 }
 
-func (sb *StatusBar) HandleKey(char rune, screen *Screen) {
+// TODO: Find a way to remove
+func (sb *StatusBar) HandleKey(event *tcell.EventKey, screen *Screen) {
 	// Not implemented
 }
