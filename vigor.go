@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/evilbits/vigor/ui"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -41,16 +42,19 @@ func main() {
 
 	screen.Clear()
 
-	rootGrid := NewGrid()
-	rootBox := NewBox(screen)
+	rootGrid := ui.NewGrid()
+	rootBox := ui.NewBox(screen)
 	rootBox.AddText("Hello world!")
 
-	rootBoxTwo := NewBox(screen)
+	rootBoxTwo := ui.NewBox(screen)
+	rootBoxTwo.SetBackgroundColor("red")
 	rootBoxTwo.AddText("Hello world from the other side")
 
-	rootGrid.AddItem(rootBox, 1)
-	rootGrid.AddItem(rootBoxTwo, 2)
-	rootGrid.Draw(screen)
+	rootGrid.
+		SetRows(0, 1).
+		AddItem(rootBox).
+		AddItem(rootBoxTwo).
+		Draw(screen)
 
 	startEventLoop(screen)
 }

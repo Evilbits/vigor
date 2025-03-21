@@ -1,4 +1,4 @@
-module github.com/vigor
+module github.com/evilbits/vigor
 
 go 1.24.1
 

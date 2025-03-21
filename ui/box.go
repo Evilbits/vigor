@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"github.com/gdamore/tcell/v2"
@@ -24,6 +24,12 @@ func NewBox(screen tcell.Screen) *Box {
 	}
 	box.Screen = screen
 	return box
+}
+
+// If background color isn't found it will be set to tcell.ColorDefault
+func (b *Box) SetBackgroundColor(color string) {
+	mappedColor := tcell.GetColor(color)
+	b.backgroundColor = mappedColor
 }
 
 func (b *Box) SetRect(width int, height int, y int, x int) {
