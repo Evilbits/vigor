@@ -8,6 +8,8 @@ import (
 )
 
 type Screen struct {
+	*Grid
+
 	innerScreen tcell.Screen
 
 	cursorColor string
@@ -58,7 +60,10 @@ func (screen *Screen) Size() (width int, height int) {
 	return screen.innerScreen.Size()
 }
 
-func (screen *Screen) StartEventLoop(grid *Grid) {
+func (screen *Screen) StartEventLoop() {
+	if screen.Grid == nil {
+		log.Fatal("Screen must have a Grid to render to")
+	}
 	tScreen := screen.innerScreen
 
 	screen.initTScreen()
@@ -77,17 +82,17 @@ func (screen *Screen) StartEventLoop(grid *Grid) {
 		switch event := event.(type) {
 		case *tcell.EventResize:
 			tScreen.Sync()
-			grid.Draw(screen)
+			screen.Grid.Draw(screen)
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyEscape || event.Key() == tcell.KeyCtrlC {
 				quit()
 			}
-			focusedArea, err := grid.GetFocusedEditableArea()
+			focusedArea, err := screen.Grid.GetFocusedEditableArea()
 			if err != nil {
 				log.Fatal(err)
 			}
 			focusedArea.HandleKey(event.Rune(), screen)
 		}
-		grid.Draw(screen)
+		screen.Grid.Draw(screen)
 	}
 }

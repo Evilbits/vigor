@@ -11,7 +11,6 @@ import (
 
 type Editor struct {
 	screen *ui.Screen
-	grid   *ui.Grid
 }
 
 func NewEditor() *Editor {
@@ -39,19 +38,20 @@ func filePathToFileName(filepath string) string {
 
 func (editor *Editor) Start(filepath string) {
 	text := readFile(filepath)
-	editor.grid = ReadConf()
+	grid := ReadConf()
+	editor.screen.Grid = grid
 
-	textArea, err := editor.grid.GetFocusedEditableArea()
+	textArea, err := grid.GetFocusedEditableArea()
 	if err != nil {
 		log.Fatal(err)
 	}
 	textArea.AddText(text)
 
-	statusBar, err := editor.grid.GetStatusBar()
+	statusBar, err := grid.GetStatusBar()
 	if err != nil {
 		log.Fatal(err)
 	}
 	statusBar.ActiveFileName = filePathToFileName(filepath)
 
-	editor.screen.StartEventLoop(editor.grid)
+	editor.screen.StartEventLoop()
 }
