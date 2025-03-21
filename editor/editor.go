@@ -1,7 +1,10 @@
 package editor
 
 import (
+	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/evilbits/vigor/ui"
 )
@@ -26,12 +29,29 @@ func readFile(path string) string {
 	return string(data[:])
 }
 
+func filePathToFileName(filepath string) string {
+	if strings.Contains(filepath, "/") {
+		splitStr := strings.Split(filepath, "/")
+		return fmt.Sprint(splitStr[len(splitStr)-1])
+	}
+	return filepath
+}
+
 func (editor *Editor) Start(filepath string) {
 	text := readFile(filepath)
 	editor.grid = ReadConf()
 
-	editor.grid.GetItem(0).Item.AddText(text)
+	textArea, err := editor.grid.GetFocusedEditableArea()
+	if err != nil {
+		log.Fatal(err)
+	}
+	textArea.AddText(text)
 
-	// editor.grid.Draw(editor.screen)
+	statusBar, err := editor.grid.GetStatusBar()
+	if err != nil {
+		log.Fatal(err)
+	}
+	statusBar.ActiveFileName = filePathToFileName(filepath)
+
 	editor.screen.StartEventLoop(editor.grid)
 }

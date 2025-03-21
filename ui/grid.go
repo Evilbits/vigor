@@ -44,13 +44,25 @@ func (gr *Grid) GetItem(idx int) *gridItem {
 	return gr.items[idx]
 }
 
-func (gr *Grid) GetFocusedEditableArea() (Drawable, error) {
+func (gr *Grid) GetFocusedEditableArea() (*TextArea, error) {
 	for _, gridItem := range gr.items {
 		if gridItem.focused {
-			return gridItem.Item, nil
+			if textArea, ok := gridItem.Item.(*TextArea); ok {
+				return textArea, nil
+			}
+			return nil, errors.New("Focused item must be a TextArea.")
 		}
 	}
 	return nil, errors.New("No focused item found.")
+}
+
+func (gr *Grid) GetStatusBar() (*StatusBar, error) {
+	for _, gridItem := range gr.items {
+		if statusBar, ok := gridItem.Item.(*StatusBar); ok {
+			return statusBar, nil
+		}
+	}
+	return nil, errors.New("No StatusBar found.")
 }
 
 func (gr *Grid) Draw(screen *Screen) {

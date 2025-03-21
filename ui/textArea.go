@@ -36,7 +36,6 @@ func (ta *TextArea) moveCursor(moveX int, moveY int, screen *Screen) {
 	ta.cursorX += moveX
 	ta.cursorY += moveY
 	screen.RenderCursorMove(ta.cursorX, ta.cursorY, prevX, prevY)
-	screen.innerScreen.Show()
 }
 
 func (ta *TextArea) HandleKey(char rune, screen *Screen) {

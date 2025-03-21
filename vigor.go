@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 
 	"github.com/evilbits/vigor/editor"
 )
@@ -16,9 +14,6 @@ func main() {
 	if filePath == "" && len(flag.Args()) > 0 {
 		filePath = flag.Args()[0]
 	}
-
-	filePath = fmt.Sprintf("./%s", filePath)
-	log.Printf("Opening file: %s", filePath)
 
 	editor.NewEditor().Start(filePath)
 }

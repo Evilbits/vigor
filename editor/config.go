@@ -1,19 +1,20 @@
 package editor
 
-import "github.com/evilbits/vigor/ui"
+import (
+	"github.com/evilbits/vigor/ui"
+)
 
 // TODO: Implement actual config reading
 func ReadConf() *ui.Grid {
 	rootGrid := ui.NewGrid()
-	rootBox := ui.NewTextArea()
+	textArea := ui.NewTextArea()
 
-	rootBoxTwo := ui.NewBox()
-	rootBoxTwo.SetBackgroundColor("grey")
-	rootBoxTwo.AddText("Position")
+	statusBar := ui.NewStatusBar(textArea)
+	statusBar.SetBackgroundColor("grey")
 
 	rootGrid.
 		SetRows(0, 1).
-		AddItem(rootBox, true).
-		AddItem(rootBoxTwo, false)
+		AddItem(textArea, true).
+		AddItem(statusBar, false)
 	return rootGrid
 }
