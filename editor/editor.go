@@ -32,6 +32,6 @@ func (editor *Editor) Start(filepath string) {
 
 	editor.grid.GetItem(0).Item.AddText(text)
 
-	editor.grid.Draw(editor.screen)
+	// editor.grid.Draw(editor.screen)
 	editor.screen.StartEventLoop(editor.grid)
 }

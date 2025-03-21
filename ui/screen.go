@@ -9,6 +9,8 @@ import (
 
 type Screen struct {
 	innerScreen tcell.Screen
+
+	cursorColor string
 }
 
 func NewScreen() *Screen {
@@ -16,9 +18,9 @@ func NewScreen() *Screen {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	screen := &Screen{
 		innerScreen: tScreen,
+		cursorColor: "grey",
 	}
 	return screen
 }
@@ -31,6 +33,25 @@ func (screen *Screen) initTScreen() {
 
 func (screen *Screen) WriteChar(x int, y int, char rune, combining []rune, background tcell.Style) {
 	screen.innerScreen.SetContent(x, y, char, nil, background)
+}
+
+func (screen *Screen) RenderCursor(x int, y int) {
+	cursorColor := tcell.GetColor(screen.cursorColor)
+	cursorStyle := tcell.StyleDefault.Background(cursorColor)
+	primary, combining, _, _ := screen.innerScreen.GetContent(x, y)
+	screen.innerScreen.SetContent(x, y, primary, combining, cursorStyle)
+}
+
+func (screen *Screen) RenderCursorMove(x int, y int, prevX int, prevY int) {
+	cursorColor := tcell.GetColor(screen.cursorColor)
+	cursorStyle := tcell.StyleDefault.Background(cursorColor)
+
+	prevPrimary, prevCombining, prevStyle, _ := screen.innerScreen.GetContent(prevX, prevY)
+	primary, combining, _, _ := screen.innerScreen.GetContent(x, y)
+
+	// Update new cursor location and reset previous location
+	screen.innerScreen.SetContent(x, y, primary, combining, cursorStyle)
+	screen.innerScreen.SetContent(prevX, prevY, prevPrimary, prevCombining, prevStyle)
 }
 
 func (screen *Screen) Size() (width int, height int) {
@@ -61,6 +82,12 @@ func (screen *Screen) StartEventLoop(grid *Grid) {
 			if event.Key() == tcell.KeyEscape || event.Key() == tcell.KeyCtrlC {
 				quit()
 			}
+			focusedArea, err := grid.GetFocusedEditableArea()
+			if err != nil {
+				log.Fatal(err)
+			}
+			focusedArea.HandleKey(event.Rune(), screen)
 		}
+		grid.Draw(screen)
 	}
 }

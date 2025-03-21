@@ -13,7 +13,7 @@ func ReadConf() *ui.Grid {
 
 	rootGrid.
 		SetRows(0, 1).
-		AddItem(rootBox).
-		AddItem(rootBoxTwo)
+		AddItem(rootBox, true).
+		AddItem(rootBoxTwo, false)
 	return rootGrid
 }

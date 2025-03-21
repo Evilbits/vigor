@@ -1,7 +1,12 @@
 package ui
 
+import "errors"
+
 type gridItem struct {
 	Item Drawable
+
+	// There should always be a focused area
+	focused bool
 }
 
 type Grid struct {
@@ -27,15 +32,25 @@ func (gr *Grid) SetRows(rows ...int) *Grid {
 
 // Add an item to the grid. Item order matters as we expect gr.rows[0] to be filled by gr.items[0].
 // Adding an item without a corresponding row will lead to the item not being rendered.
-func (gr *Grid) AddItem(item Drawable) *Grid {
+func (gr *Grid) AddItem(item Drawable, focused bool) *Grid {
 	gr.items = append(gr.items, &gridItem{
-		Item: item,
+		Item:    item,
+		focused: focused,
 	})
 	return gr
 }
 
 func (gr *Grid) GetItem(idx int) *gridItem {
 	return gr.items[idx]
+}
+
+func (gr *Grid) GetFocusedEditableArea() (Drawable, error) {
+	for _, gridItem := range gr.items {
+		if gridItem.focused {
+			return gridItem.Item, nil
+		}
+	}
+	return nil, errors.New("No focused item found.")
 }
 
 func (gr *Grid) Draw(screen *Screen) {

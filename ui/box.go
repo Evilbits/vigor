@@ -9,8 +9,6 @@ type Box struct {
 
 	x, y, width, height int
 
-	innerX, innerY, innerWidth, innerHeight int
-
 	backgroundColor tcell.Color
 }
 
@@ -33,6 +31,14 @@ func (b *Box) SetRect(width int, height int, y int, x int) {
 	b.height = height
 	b.x = x
 	b.y = y
+}
+
+func (b *Box) GetSize() (width int, height int) {
+	return b.width, b.height
+}
+
+func (b *Box) GetXY() (x int, y int) {
+	return b.x, b.y
 }
 
 func (b *Box) Draw(screen *Screen) {
@@ -61,4 +67,8 @@ func (b *Box) Draw(screen *Screen) {
 
 func (b *Box) AddText(text string) {
 	b.Text = text
+}
+
+func (b *Box) HandleKey(char rune, screen *Screen) {
+	// Not implemented
 }
