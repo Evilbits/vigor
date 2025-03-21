@@ -8,6 +8,7 @@ import (
 
 type Editor struct {
 	screen *ui.Screen
+	grid   *ui.Grid
 }
 
 func NewEditor() *Editor {
@@ -27,19 +28,10 @@ func readFile(path string) string {
 
 func (editor *Editor) Start(filepath string) {
 	text := readFile(filepath)
-	rootGrid := ui.NewGrid()
-	rootBox := ui.NewBox(editor.screen)
-	rootBox.AddText(text)
+	editor.grid = ReadConf()
 
-	rootBoxTwo := ui.NewBox(editor.screen)
-	rootBoxTwo.SetBackgroundColor("red")
-	rootBoxTwo.AddText("Position")
+	editor.grid.GetItem(0).Item.AddText(text)
 
-	rootGrid.
-		SetRows(0, 1).
-		AddItem(rootBox).
-		AddItem(rootBoxTwo).
-		Draw(editor.screen)
-
-	editor.screen.StartEventLoop(rootGrid)
+	editor.grid.Draw(editor.screen)
+	editor.screen.StartEventLoop(editor.grid)
 }

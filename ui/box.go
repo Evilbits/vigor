@@ -5,8 +5,6 @@ import (
 )
 
 type Box struct {
-	*Screen
-
 	Text string
 
 	x, y, width, height int
@@ -16,13 +14,11 @@ type Box struct {
 	backgroundColor tcell.Color
 }
 
-func NewBox(screen *Screen) *Box {
+func NewBox() *Box {
 	box := &Box{
-		width:           15,
-		height:          15,
-		backgroundColor: tcell.GetColor("grey"),
+		width:  15,
+		height: 15,
 	}
-	box.Screen = screen
 	return box
 }
 
@@ -63,17 +59,6 @@ func (b *Box) Draw(screen *Screen) {
 	}
 }
 
-func (b *Box) AddText(text string) *Box {
+func (b *Box) AddText(text string) {
 	b.Text = text
-	return b
-}
-
-func (b *Box) AddMultilineText(textArr []string) *Box {
-	compiledText := ""
-
-	for _, text := range textArr {
-		compiledText += LF.Add(text)
-	}
-	b.Text = compiledText
-	return b
 }

@@ -1,7 +1,7 @@
 package ui
 
 type gridItem struct {
-	Item *Box
+	Item Drawable
 }
 
 type Grid struct {
@@ -27,11 +27,15 @@ func (gr *Grid) SetRows(rows ...int) *Grid {
 
 // Add an item to the grid. Item order matters as we expect gr.rows[0] to be filled by gr.items[0].
 // Adding an item without a corresponding row will lead to the item not being rendered.
-func (gr *Grid) AddItem(item *Box) *Grid {
+func (gr *Grid) AddItem(item Drawable) *Grid {
 	gr.items = append(gr.items, &gridItem{
 		Item: item,
 	})
 	return gr
+}
+
+func (gr *Grid) GetItem(idx int) *gridItem {
+	return gr.items[idx]
 }
 
 func (gr *Grid) Draw(screen *Screen) {
