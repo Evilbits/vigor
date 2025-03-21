@@ -48,13 +48,32 @@ func (b *Box) Draw(screen tcell.Screen) {
 	}
 
 	if b.Text != "" {
-		for i, char := range b.Text {
-			b.Screen.SetContent(i, b.y, char, nil, background)
+		y := b.y
+		x := b.x
+
+		for _, char := range b.Text {
+			if LineFeed(char) == LF {
+				y++
+				x = 0
+				continue
+			}
+			b.Screen.SetContent(x, y, char, nil, background)
+			x++
 		}
 	}
 }
 
 func (b *Box) AddText(text string) *Box {
 	b.Text = text
+	return b
+}
+
+func (b *Box) AddMultilineText(textArr []string) *Box {
+	compiledText := ""
+
+	for _, text := range textArr {
+		compiledText += LF.Add(text)
+	}
+	b.Text = compiledText
 	return b
 }

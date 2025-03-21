@@ -41,7 +41,7 @@ func (gr *Grid) AddItem(item *Box) *Grid {
 }
 
 // TODO: Implement height based on row values
-func (gr *Grid) Draw(screen tcell.Screen) {
+func (gr *Grid) Draw(screen tcell.Screen, debug bool) {
 	screenWidth, screenHeight := screen.Size()
 
 	// Start rendering at yPos 0
@@ -75,9 +75,13 @@ func (gr *Grid) Draw(screen tcell.Screen) {
 
 		item := gridItem.Item
 		// Debug
-		item.AddText(fmt.Sprintf("(%d): %v", calculatedHeight, item.Text))
+		itemOrigText := item.Text
+		if debug {
+			item.AddText(fmt.Sprintf("(%d, %d): %v", calculatedHeight, screenWidth, item.Text))
+		}
 		item.SetRect(screenWidth, calculatedHeight, nextYPos, 0)
 		item.Draw(screen)
+		item.AddText(itemOrigText)
 
 		// Move down yPos so next item can render from there
 		nextYPos += calculatedHeight
