@@ -70,6 +70,6 @@ func (b *Box) AddText(text string) {
 }
 
 // TODO: Find a way to remove
-func (b *Box) HandleKey(event *tcell.EventKey, screen *Screen) {
+func (b *Box) HandleKey(event *tcell.EventKey) {
 	// Not implemented
 }

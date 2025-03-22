@@ -91,7 +91,7 @@ func (screen *Screen) StartEventLoop() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			focusedArea.HandleKey(event, screen)
+			focusedArea.HandleKey(event)
 		}
 		screen.Grid.Draw(screen)
 	}

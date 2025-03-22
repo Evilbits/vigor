@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -33,6 +34,9 @@ type TextArea struct {
 	// Stores last x pos that a user moved to. This allows better behaviour when going from a long line
 	// to a short line and then to a long line again
 	lastUserXPos int
+
+	// Debug
+	lastKeySeen tcell.Key
 }
 
 func NewTextArea() *TextArea {
@@ -52,14 +56,19 @@ func (ta *TextArea) Draw(screen *Screen) {
 	screen.RenderCursor(ta.cursorX, ta.cursorY)
 }
 
-func (ta *TextArea) HandleKey(event *tcell.EventKey, screen *Screen) {
+func (ta *TextArea) HandleKey(event *tcell.EventKey) {
 	char := event.Rune()
+	ta.lastKeySeen = event.Key()
 	switch ta.mode {
 	case VisualMode:
-		ta.handleVisualModeKey(char, screen)
+		ta.handleVisualModeKey(char)
 	case InsertMode:
-		if event.Key() == tcell.KeyEsc && ta.mode == InsertMode {
+		if event.Key() == tcell.KeyEsc {
 			ta.mode = VisualMode
+			return
+		}
+		if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 || event.Key() == tcell.KeyDelete {
+			ta.removeChar(ta.cursorX, ta.cursorY)
 			return
 		}
 		ta.insertChar(ta.cursorX, ta.cursorY, char)
@@ -67,21 +76,21 @@ func (ta *TextArea) HandleKey(event *tcell.EventKey, screen *Screen) {
 	}
 }
 
-func (ta *TextArea) handleVisualModeKey(char rune, screen *Screen) {
+func (ta *TextArea) handleVisualModeKey(char rune) {
 	switch char {
 	case 'h':
-		ta.moveCursor(-1, 0, screen)
+		ta.moveCursor(-1, 0)
 	case 'j':
-		ta.moveCursor(0, 1, screen)
+		ta.moveCursor(0, 1)
 	case 'k':
-		ta.moveCursor(0, -1, screen)
+		ta.moveCursor(0, -1)
 	case 'l':
-		ta.moveCursor(1, 0, screen)
+		ta.moveCursor(1, 0)
 	case 'i':
 		ta.mode = InsertMode
 	case 'a':
-		ta.moveCursor(1, 0, screen)
 		ta.mode = InsertMode
+		ta.moveCursor(1, 0)
 	}
 }
 
@@ -93,7 +102,7 @@ func (ta *TextArea) GetMode() Mode {
 	return ta.mode
 }
 
-func (ta *TextArea) moveCursor(moveX int, moveY int, screen *Screen) {
+func (ta *TextArea) moveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
 	if (ta.cursorX+moveX < x) || (ta.cursorY+moveY < y) {
 		return
@@ -112,7 +121,8 @@ func (ta *TextArea) moveCursor(moveX int, moveY int, screen *Screen) {
 	if ta.cursorX+moveX > rowLen {
 		return
 	}
-	if rowLen > 0 && ta.cursorX+moveX >= rowLen {
+	// moveY is required to be checked here as we can be at x+1 position after leaving insert mode
+	if rowLen > 0 && ta.cursorX+moveX >= rowLen && ta.mode == VisualMode && moveY == 0 {
 		return
 	}
 
@@ -148,12 +158,8 @@ func (ta *TextArea) moveCursor(moveX int, moveY int, screen *Screen) {
 		return
 	}
 
-	prevX := ta.cursorX
-	prevY := ta.cursorY
 	ta.cursorX += moveX
 	ta.cursorY += moveY
-
-	screen.RenderCursorMove(ta.cursorX, ta.cursorY, prevX, prevY)
 }
 
 // Since TextContent is split by line we can use y as an index into our TextContent
@@ -165,7 +171,18 @@ func (ta *TextArea) insertChar(x int, y int, char rune) {
 	if x > len(currStr) {
 		return
 	}
+	ta.lastUserXPos += 1
 	ta.TextContent[y] = currStr[:x] + string(char) + currStr[x:]
+}
+
+func (ta *TextArea) removeChar(x int, y int) error {
+	currStr := ta.TextContent[y]
+	if x == 0 || x > len(currStr) || y > len(ta.TextContent) {
+		return errors.New("Cannot remove char out of bounds")
+	}
+	ta.TextContent[y] = currStr[:x-1] + currStr[x:]
+	ta.moveCursor(-1, 0)
+	return nil
 }
 
 func buildText(textArr []string) string {

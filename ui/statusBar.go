@@ -36,6 +36,8 @@ func (sb *StatusBar) Draw(screen *Screen) {
 		statusBarStr += statusBarSeparator()
 		statusBarStr += sb.ActiveFileName
 	}
+	statusBarStr += statusBarSeparator()
+	statusBarStr += fmt.Sprintf("%v", sb.lastKeySeen)
 
 	sb.AddText(statusBarStr)
 }
@@ -45,6 +47,6 @@ func (sb *StatusBar) AddText(text string) {
 }
 
 // TODO: Find a way to remove
-func (sb *StatusBar) HandleKey(event *tcell.EventKey, screen *Screen) {
+func (sb *StatusBar) HandleKey(event *tcell.EventKey) {
 	// Not implemented
 }

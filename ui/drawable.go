@@ -7,5 +7,5 @@ type Drawable interface {
 	SetRect(width int, height int, y int, x int)
 	AddText(text string)
 	// TODO: Find a way to remove HandleKey()
-	HandleKey(event *tcell.EventKey, screen *Screen)
+	HandleKey(event *tcell.EventKey)
 }

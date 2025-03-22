@@ -24,11 +24,11 @@ To run from source simply execute
 There are lots of features that still need to be implemented. This is a non-exhaustive list:
 * Reading a config when initiating the `Editor`
 * Linenumbers in `TextArea`
-* Inserting and removing characters
 * Navigating between files
 * Saving to disk
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
 * Undo/redo
 
 ## Implemented
-* Smart cursor behaviour. Keep state when moving between lines and navigate x pos according to where we have previously been. This is similar to how other IDEs implement cursors.
+* Smart cursor behaviour. Keep state when moving between lines and navigate x pos according to where we have previously been. This is similar to how other IDEs implement cursors. Lots of interesting behaviours here. Examples include different behaviour of mouse cursor in Insert mode, so that we can insert at the end of a row, versus how we want it to behave in Visual mode. 
+* Inserting and removing characters. 
