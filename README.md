@@ -28,5 +28,7 @@ There are lots of features that still need to be implemented. This is a non-exha
 * Navigating between files
 * Saving to disk
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
-* Implement IDE-like behaviour for the cursor (don't allow jumping to x/y values that are out of bounds of the text)
 * Undo/redo
+
+## Implemented
+* Smart cursor behaviour. Keep state when moving between lines and navigate x pos according to where we have previously been. This is similar to how other IDEs implement cursors.

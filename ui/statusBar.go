@@ -27,7 +27,7 @@ func statusBarSeparator() string {
 func (sb *StatusBar) Draw(screen *Screen) {
 	statusBarStr := ""
 	sb.Box.Draw(screen)
-	statusBarStr += fmt.Sprintf("(%v, %v)", sb.TextArea.cursorX, sb.TextArea.cursorY)
+	statusBarStr += fmt.Sprintf("(%v [%v], %v)", sb.TextArea.cursorX, sb.TextArea.lastUserXPos, sb.TextArea.cursorY)
 
 	statusBarStr += statusBarSeparator()
 	statusBarStr += fmt.Sprintf("[%v]", sb.GetMode())
