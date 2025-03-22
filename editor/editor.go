@@ -12,6 +12,8 @@ import (
 
 type Editor struct {
 	screen *ui.Screen
+
+	cmd *ui.Cmd
 }
 
 func NewEditor() *Editor {
@@ -40,19 +42,11 @@ func filePathToFileName(filepath string) string {
 
 func (editor *Editor) Start(filepath string) {
 	text := readFile(filepath)
-	grid := ReadConf()
+	textArea, cmd, statusBar, grid := ReadConf()
+	editor.cmd = cmd
 	editor.screen.Grid = grid
 
-	textArea, err := grid.GetFocusedEditableArea()
-	if err != nil {
-		log.Fatal(err)
-	}
 	textArea.TextContent = text
-
-	statusBar, err := grid.GetStatusBar()
-	if err != nil {
-		log.Fatal(err)
-	}
 	statusBar.ActiveFileName = filePathToFileName(filepath)
 
 	focusedArea, err := editor.screen.Grid.GetFocusedEditableArea()
@@ -73,7 +67,11 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 	ta.LastKeySeen = event.Key()
 	switch ta.Mode {
 	case ui.VisualMode:
-		ed.handleVisualModeKey(ta, char)
+		if ed.cmd.CommandMode {
+			ed.handleCmdCommandKey(event)
+		} else {
+			ed.handleVisualModeKey(ta, char)
+		}
 	case ui.InsertMode:
 		if event.Key() == tcell.KeyEsc {
 			ta.Mode = ui.VisualMode
@@ -85,6 +83,28 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 		}
 		ta.InsertChar(char)
 		ta.MoveCursor(1, 0)
+	}
+}
+
+func (ed *Editor) handleCmdCommandKey(event *tcell.EventKey) {
+	switch event.Key() {
+	case tcell.KeyEsc:
+		ed.cmd.ExitCommandMode()
+	case tcell.KeyEnter:
+		ed.executeCmdCommand(ed.cmd.CurrentCommand)
+	default:
+		char := event.Rune()
+		ed.cmd.AppendRuneToCurrentCommand(char)
+	}
+}
+
+func (ed *Editor) executeCmdCommand(command string) {
+	ed.cmd.ExitCommandMode()
+	switch command {
+	case "q", "quit":
+		ed.handleExit()
+	default:
+		ed.cmd.SetError(fmt.Sprintf("Invalid command: %s", command))
 	}
 }
 
@@ -103,5 +123,12 @@ func (ed *Editor) handleVisualModeKey(ta *ui.TextArea, char rune) {
 	case 'a':
 		ta.Mode = ui.InsertMode
 		ta.MoveCursor(1, 0)
+	case ':':
+		ed.cmd.StartCommandMode()
 	}
+}
+
+func (ed *Editor) handleExit() {
+	ed.screen.Fini()
+	os.Exit(0)
 }

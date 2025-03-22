@@ -1,10 +1,8 @@
 package ui
 
 import (
-	"log"
-	"os"
-
 	"github.com/gdamore/tcell/v2"
+	"log"
 )
 
 type Screen struct {
@@ -70,11 +68,6 @@ func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 	screen.initTScreen()
 	tScreen.Clear()
 
-	quit := func() {
-		tScreen.Fini()
-		os.Exit(0)
-	}
-
 	for {
 		event := tScreen.PollEvent()
 
@@ -83,9 +76,6 @@ func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 			tScreen.Sync()
 			screen.Grid.Draw(screen)
 		case *tcell.EventKey:
-			if event.Key() == tcell.KeyCtrlC {
-				quit()
-			}
 			if screen.OnKeyPress == nil {
 				panic("No event handler registered")
 			}
@@ -94,4 +84,8 @@ func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 		screen.Grid.Draw(screen)
 		tScreen.Show()
 	}
+}
+
+func (screen *Screen) Fini() {
+	screen.innerScreen.Fini()
 }

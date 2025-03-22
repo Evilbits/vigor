@@ -19,6 +19,7 @@ To run from source simply execute
 ## Drawable
 * `TextArea`: For rendering and interacting with text.
 * `StatusBar`: For displaying additional metadata in the main IDE view.
+* `Cmd`: Used to run commands. Behaves similar to VIM command-line mode.
 
 ## TODO
 There are lots of features that still need to be implemented. This is a non-exhaustive list:
@@ -32,3 +33,4 @@ There are lots of features that still need to be implemented. This is a non-exha
 ## Implemented
 * Smart cursor behaviour. Keep state when moving between lines and navigate x pos according to where we have previously been. This is similar to how other IDEs implement cursors. Lots of interesting behaviours here. Examples include different behaviour of mouse cursor in Insert mode, so that we can insert at the end of a row, versus how we want it to behave in Visual mode. 
 * Inserting and removing characters. 
+* Your favourite VIM commands like `:q`.

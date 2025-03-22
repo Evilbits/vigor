@@ -5,12 +5,11 @@ import (
 )
 
 // TODO: Implement actual config reading
-func ReadConf() *ui.Grid {
+func ReadConf() (*ui.TextArea, *ui.Cmd, *ui.StatusBar, *ui.Grid) {
 	rootGrid := ui.NewGrid()
 	textArea := ui.NewTextArea()
 
 	cmd := ui.NewCmd()
-	cmd.SetBackgroundColor("red")
 
 	statusBar := ui.NewStatusBar(textArea)
 	statusBar.SetBackgroundColor("grey")
@@ -20,5 +19,5 @@ func ReadConf() *ui.Grid {
 		AddItem(textArea, true).
 		AddItem(cmd, false).
 		AddItem(statusBar, false)
-	return rootGrid
+	return textArea, cmd, statusBar, rootGrid
 }

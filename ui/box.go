@@ -68,3 +68,7 @@ func (b *Box) Draw(screen *Screen) {
 func (b *Box) AddText(text string) {
 	b.Text = text
 }
+
+func (b *Box) AppendRune(char rune) {
+	b.Text += string(char)
+}
