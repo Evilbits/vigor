@@ -13,6 +13,7 @@ type Screen struct {
 	innerScreen tcell.Screen
 
 	cursorColor string
+	OnKeyPress  func(event *tcell.EventKey)
 }
 
 func NewScreen() *Screen {
@@ -60,7 +61,7 @@ func (screen *Screen) Size() (width int, height int) {
 	return screen.innerScreen.Size()
 }
 
-func (screen *Screen) StartEventLoop() {
+func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 	if screen.Grid == nil {
 		log.Fatal("Screen must have a Grid to render to")
 	}
@@ -87,11 +88,10 @@ func (screen *Screen) StartEventLoop() {
 			if event.Key() == tcell.KeyCtrlC {
 				quit()
 			}
-			focusedArea, err := screen.Grid.GetFocusedEditableArea()
-			if err != nil {
-				log.Fatal(err)
+			if screen.OnKeyPress == nil {
+				panic("No event handler registered")
 			}
-			focusedArea.HandleKey(event)
+			screen.OnKeyPress(event)
 		}
 		screen.Grid.Draw(screen)
 	}

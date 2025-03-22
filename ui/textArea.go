@@ -26,7 +26,7 @@ const (
 type TextArea struct {
 	*Box
 
-	mode Mode
+	Mode Mode
 
 	// Text content split by line delimiters
 	TextContent      []string
@@ -36,7 +36,7 @@ type TextArea struct {
 	lastUserXPos int
 
 	// Debug
-	lastKeySeen tcell.Key
+	LastKeySeen tcell.Key
 }
 
 func NewTextArea() *TextArea {
@@ -56,53 +56,7 @@ func (ta *TextArea) Draw(screen *Screen) {
 	screen.RenderCursor(ta.cursorX, ta.cursorY)
 }
 
-func (ta *TextArea) HandleKey(event *tcell.EventKey) {
-	char := event.Rune()
-	ta.lastKeySeen = event.Key()
-	switch ta.mode {
-	case VisualMode:
-		ta.handleVisualModeKey(char)
-	case InsertMode:
-		if event.Key() == tcell.KeyEsc {
-			ta.mode = VisualMode
-			return
-		}
-		if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 || event.Key() == tcell.KeyDelete {
-			ta.removeChar(ta.cursorX, ta.cursorY)
-			return
-		}
-		ta.insertChar(ta.cursorX, ta.cursorY, char)
-		ta.cursorX = ta.cursorX + 1
-	}
-}
-
-func (ta *TextArea) handleVisualModeKey(char rune) {
-	switch char {
-	case 'h':
-		ta.moveCursor(-1, 0)
-	case 'j':
-		ta.moveCursor(0, 1)
-	case 'k':
-		ta.moveCursor(0, -1)
-	case 'l':
-		ta.moveCursor(1, 0)
-	case 'i':
-		ta.mode = InsertMode
-	case 'a':
-		ta.mode = InsertMode
-		ta.moveCursor(1, 0)
-	}
-}
-
-func (ta *TextArea) SetMode(mode Mode) {
-	ta.mode = mode
-}
-
-func (ta *TextArea) GetMode() Mode {
-	return ta.mode
-}
-
-func (ta *TextArea) moveCursor(moveX int, moveY int) {
+func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
 	if (ta.cursorX+moveX < x) || (ta.cursorY+moveY < y) {
 		return
@@ -122,7 +76,7 @@ func (ta *TextArea) moveCursor(moveX int, moveY int) {
 		return
 	}
 	// moveY is required to be checked here as we can be at x+1 position after leaving insert mode
-	if rowLen > 0 && ta.cursorX+moveX >= rowLen && ta.mode == VisualMode && moveY == 0 {
+	if rowLen > 0 && ta.cursorX+moveX >= rowLen && ta.Mode == VisualMode && moveY == 0 {
 		return
 	}
 
@@ -162,8 +116,10 @@ func (ta *TextArea) moveCursor(moveX int, moveY int) {
 	ta.cursorY += moveY
 }
 
+// Insert char at current cursor position
 // Since TextContent is split by line we can use y as an index into our TextContent
-func (ta *TextArea) insertChar(x int, y int, char rune) {
+func (ta *TextArea) InsertChar(char rune) {
+	x, y := ta.cursorX, ta.cursorY
 	if y > len(ta.TextContent) {
 		return
 	}
@@ -175,13 +131,15 @@ func (ta *TextArea) insertChar(x int, y int, char rune) {
 	ta.TextContent[y] = currStr[:x] + string(char) + currStr[x:]
 }
 
-func (ta *TextArea) removeChar(x int, y int) error {
+// Removes a char at current cursor position
+func (ta *TextArea) RemoveChar() error {
+	x, y := ta.cursorX, ta.cursorY
 	currStr := ta.TextContent[y]
 	if x == 0 || x > len(currStr) || y > len(ta.TextContent) {
 		return errors.New("Cannot remove char out of bounds")
 	}
 	ta.TextContent[y] = currStr[:x-1] + currStr[x:]
-	ta.moveCursor(-1, 0)
+	ta.MoveCursor(-1, 0)
 	return nil
 }
 

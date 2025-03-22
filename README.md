@@ -11,8 +11,8 @@ To run from source simply execute
 `go run . -f yourfile`
 
 ## Concepts
-1. `Editor` is the top level component. It owns and manages all IDE features such as reading files, saving files, reading config, etc.
-2. `Screen` wraps a `Grid` (see below) and is in charge of the main event loop which renders text output and deals with key input.
+1. `Editor` is the top level component. It owns and manages all IDE features such as reading files, dealing with key inputs, etc.
+2. `Screen` wraps a `Grid` (see below) and is in charge of the main event loop which renders components.
 3. `Grid` wraps all renderable components and automatically sizes itself according to the CLI termsize.
 4. `Drawable` components can be rendered with output. There are multiple types of `Drawable` components with different behaviour.
 

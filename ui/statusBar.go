@@ -30,14 +30,14 @@ func (sb *StatusBar) Draw(screen *Screen) {
 	statusBarStr += fmt.Sprintf("(%v [%v], %v)", sb.TextArea.cursorX, sb.TextArea.lastUserXPos, sb.TextArea.cursorY)
 
 	statusBarStr += statusBarSeparator()
-	statusBarStr += fmt.Sprintf("[%v]", sb.GetMode())
+	statusBarStr += fmt.Sprintf("[%v]", sb.Mode)
 
 	if sb.ActiveFileName != "" {
 		statusBarStr += statusBarSeparator()
 		statusBarStr += sb.ActiveFileName
 	}
 	statusBarStr += statusBarSeparator()
-	statusBarStr += fmt.Sprintf("%v", sb.lastKeySeen)
+	statusBarStr += fmt.Sprintf("%v", sb.LastKeySeen)
 
 	sb.AddText(statusBarStr)
 }
