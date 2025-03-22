@@ -68,8 +68,3 @@ func (b *Box) Draw(screen *Screen) {
 func (b *Box) AddText(text string) {
 	b.Text = text
 }
-
-// TODO: Find a way to remove
-func (b *Box) HandleKey(event *tcell.EventKey) {
-	// Not implemented
-}

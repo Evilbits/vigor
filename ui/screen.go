@@ -23,7 +23,7 @@ func NewScreen() *Screen {
 	}
 	screen := &Screen{
 		innerScreen: tScreen,
-		cursorColor: "grey",
+		cursorColor: "white",
 	}
 	return screen
 }
@@ -76,8 +76,6 @@ func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 	}
 
 	for {
-		tScreen.Show()
-
 		event := tScreen.PollEvent()
 
 		switch event := event.(type) {
@@ -94,5 +92,6 @@ func (screen *Screen) StartEventLoop(focusedArea *TextArea) {
 			screen.OnKeyPress(event)
 		}
 		screen.Grid.Draw(screen)
+		tScreen.Show()
 	}
 }
