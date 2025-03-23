@@ -62,7 +62,7 @@ func (ta *TextArea) Draw(screen *Screen) {
 }
 
 func (ta *TextArea) MoveCursorEndOfCurrLine() {
-	rowLen := len(ta.TextContent[ta.cursorY]) - 1
+	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY]) - 1
 	moveX := rowLen - ta.cursorX
 	ta.MoveCursor(moveX, 0)
 }
@@ -74,12 +74,12 @@ func (ta *TextArea) MoveCursorBeginningOfCurrLine() {
 func (ta *TextArea) MoveCursorBeginningOfFile() {
 	ta.textContentOffset = 0
 	ta.lastUserXPos = 0
-	ta.MoveCursor(-ta.cursorX, -ta.cursorY)
+	ta.cursorX = 0
+	ta.cursorY = 0
 }
 
 func (ta *TextArea) MoveCursorEndOfFile() {
-	ta.lastUserXPos = 0
-	ta.MoveCursor(-ta.cursorX, 200)
+	ta.MoveCursor(-ta.cursorX, len(ta.TextContent)-ta.getCursorLocInText())
 }
 
 func (ta *TextArea) GetTextContentOffset() int {
@@ -88,21 +88,18 @@ func (ta *TextArea) GetTextContentOffset() int {
 
 func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
+	// If going out of bounds
 	if ta.cursorX+moveX < x {
 		return
-	} else if moveY < 0 && ta.cursorY+moveY < y {
-		ta.textContentOffset = max(ta.textContentOffset+moveY, 0)
-	}
-	// If going out of bounds towards negative
-	if ta.cursorY+moveY < y {
-		return
 	}
 
+	// TODO: Panic is happening when scrolling out of bounds y upwards
+
+	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY])
 	if moveX != 0 {
-		ta.lastUserXPos = ta.cursorX + moveX
+		ta.lastUserXPos = min(ta.cursorX+moveX, rowLen-1)
 	}
 
-	rowLen := len(ta.TextContent[ta.cursorY])
 	// Don't allow moving further on the x axis than the content
 	if ta.cursorX+moveX > rowLen {
 		return
@@ -112,29 +109,28 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 		return
 	}
 
+	cursorLoc := ta.getCursorLocInText()
+
 	// If we are y moving fit to the length of the new row on the x axis
 	// This implements more IDE-like cursor movement between lines of different length
 	if moveY != 0 {
-		if ta.cursorY+moveY >= 0 && ta.cursorY+moveY < len(ta.TextContent) {
-			nextRowLen := len(ta.TextContent[ta.cursorY+moveY])
-			if ta.lastUserXPos > nextRowLen && ta.cursorX < nextRowLen {
-				// Move to end of row if we have stored a prev x value that's higher
-				moveX += nextRowLen - ta.cursorX - 1
-			} else if ta.lastUserXPos <= nextRowLen {
-				// Move to stored x val if next row is longer
+		nextRowIdx := cursorLoc + moveY
+
+		if nextRowIdx >= 0 && nextRowIdx < len(ta.TextContent) {
+			nextRow := ta.TextContent[nextRowIdx]
+			nextRowLen := len(nextRow)
+			if ta.lastUserXPos > nextRowLen-1 {
+				moveX += nextRowLen - ta.cursorX
+				if nextRowLen > 0 {
+					moveX += -1
+				}
+			} else if ta.lastUserXPos < nextRowLen {
 				toMove := ta.lastUserXPos - ta.cursorX
 				if ta.cursorX+toMove == nextRowLen && nextRowLen != 0 {
 					// Handle a case where we move from rowLen+1 from another line
 					toMove += -1
 				}
 				moveX = toMove
-			} else if ta.cursorX >= nextRowLen {
-				// If next row is shorter than our current row move to end of it
-				if nextRowLen == 0 {
-					moveX -= ta.cursorX - nextRowLen
-				} else {
-					moveX -= ta.cursorX - nextRowLen + 1
-				}
 			}
 		}
 	}
@@ -142,7 +138,7 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	_, renderedY := ta.Box.GetSize()
 	// Don't allow going outside Y axis of text. Simply bound the movement to the maximum rendered area that
 	// we allow movement within
-	if ta.cursorY+moveY >= len(ta.TextContent) {
+	if cursorLoc+moveY >= len(ta.TextContent) {
 		moveY = renderedY - ta.cursorY - 1
 		ta.textContentOffset = len(ta.TextContent) - renderedY - 1
 		ta.cursorY += moveY
@@ -151,19 +147,29 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 
 	// If we are scrolling outside rendered content in y axis but there is more text
 	// scroll the screen and bound ypos to max allowed by bounding box
-	if moveY != 0 && ta.cursorY+moveY >= renderedY && len(ta.TextContent) >= renderedY {
-		if ta.textContentOffset+renderedY >= len(ta.TextContent) {
+	if moveY != 0 {
+		if moveY > 0 && ta.cursorY+moveY >= renderedY && len(ta.TextContent) >= renderedY {
+			// Scrolling down
+			ta.textContentOffset += moveY
+			if ta.textContentOffset+renderedY > len(ta.TextContent)-1 {
+				ta.textContentOffset = len(ta.TextContent) - renderedY - 1
+			}
+			ta.cursorX += moveX
+			return
+		} else if moveY < 0 && ta.cursorY+moveY < y {
+			// Scrolling up
+			ta.textContentOffset = max(ta.textContentOffset+moveY, 0)
+			ta.cursorX += moveX
 			return
 		}
-		ta.textContentOffset += moveY
-		if ta.textContentOffset+renderedY > len(ta.TextContent)-1 {
-			ta.textContentOffset = len(ta.TextContent) - renderedY - 1
-		}
-		return
 	}
 
 	ta.cursorX += moveX
 	ta.cursorY += moveY
+}
+
+func (ta *TextArea) getCursorLocInText() int {
+	return ta.cursorY + ta.textContentOffset
 }
 
 // Insert char at current cursor position
