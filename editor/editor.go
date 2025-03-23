@@ -62,25 +62,32 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 	switch ta.Mode {
 	case ui.VisualMode:
 		if ed.cmd.CommandMode {
-			ed.handleCmdCommandKey(event)
+			ed.handleCmdCommandEvent(event)
 		} else {
 			ed.handleVisualModeKey(ta, char)
 		}
 	case ui.InsertMode:
-		if event.Key() == tcell.KeyEsc {
-			ta.Mode = ui.VisualMode
-			return
-		}
-		if event.Key() == tcell.KeyBackspace || event.Key() == tcell.KeyBackspace2 || event.Key() == tcell.KeyDelete {
-			ta.RemoveChar()
-			return
-		}
+		ed.handleInsertModeEvent(ta, event)
+	}
+}
+
+func (ed *Editor) handleInsertModeEvent(ta *ui.TextArea, event *tcell.EventKey) {
+	char := event.Rune()
+
+	switch event.Key() {
+	case tcell.KeyEsc:
+		ta.Mode = ui.VisualMode
+	case tcell.KeyBackspace, tcell.KeyBackspace2, tcell.KeyDelete:
+		ta.RemoveChar()
+	case tcell.KeyEnter:
+		ta.InsertNewline()
+	default:
 		ta.InsertChar(char)
 		ta.MoveCursor(1, 0)
 	}
 }
 
-func (ed *Editor) handleCmdCommandKey(event *tcell.EventKey) {
+func (ed *Editor) handleCmdCommandEvent(event *tcell.EventKey) {
 	switch event.Key() {
 	case tcell.KeyEsc:
 		ed.cmd.ExitCommandMode()

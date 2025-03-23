@@ -36,10 +36,6 @@ func (f *File) WriteFile(text []string) error {
 
 	data := strings.Join(text, "\n")
 
-	if len(text) > 0 {
-		data += "\n"
-	}
-
 	return os.WriteFile(f.path, []byte(data), 0644)
 }
 

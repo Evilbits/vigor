@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -54,46 +55,12 @@ func NewTextArea() *TextArea {
 	return textArea
 }
 
-func (ta *TextArea) Draw(screen *Screen) {
-	ta.Box.AddText(ta.buildTextContent())
-	ta.Box.Draw(screen)
-
-	screen.RenderCursor(ta.cursorX, ta.cursorY)
-}
-
-func (ta *TextArea) MoveCursorEndOfCurrLine() {
-	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY]) - 1
-	moveX := rowLen - ta.cursorX
-	ta.MoveCursor(moveX, 0)
-}
-
-func (ta *TextArea) MoveCursorBeginningOfCurrLine() {
-	ta.MoveCursor(-ta.cursorX, 0)
-}
-
-func (ta *TextArea) MoveCursorBeginningOfFile() {
-	ta.textContentOffset = 0
-	ta.lastUserXPos = 0
-	ta.cursorX = 0
-	ta.cursorY = 0
-}
-
-func (ta *TextArea) MoveCursorEndOfFile() {
-	ta.MoveCursor(-ta.cursorX, len(ta.TextContent)-ta.getCursorLocInText())
-}
-
-func (ta *TextArea) GetTextContentOffset() int {
-	return ta.textContentOffset
-}
-
 func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
 	// If going out of bounds
 	if ta.cursorX+moveX < x {
 		return
 	}
-
-	// TODO: Panic is happening when scrolling out of bounds y upwards
 
 	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY])
 	if moveX != 0 {
@@ -109,6 +76,7 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 		return
 	}
 
+	textContentLen := len(ta.TextContent)
 	cursorLoc := ta.getCursorLocInText()
 
 	// If we are y moving fit to the length of the new row on the x axis
@@ -116,11 +84,12 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	if moveY != 0 {
 		nextRowIdx := cursorLoc + moveY
 
-		if nextRowIdx >= 0 && nextRowIdx < len(ta.TextContent) {
+		if nextRowIdx >= 0 && nextRowIdx < textContentLen {
 			nextRow := ta.TextContent[nextRowIdx]
 			nextRowLen := len(nextRow)
 			if ta.lastUserXPos > nextRowLen-1 {
-				moveX += nextRowLen - ta.cursorX
+				// Bound moveX by current x pos to prevent moving out of bounds
+				moveX += max(nextRowLen-ta.cursorX, -ta.cursorX)
 				if nextRowLen > 0 {
 					moveX += -1
 				}
@@ -139,9 +108,9 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	// TODO: Clean up this and next piece of logic
 	// Don't allow going outside Y axis of text. Simply bound the movement to the maximum rendered area that
 	// we allow movement within
-	if cursorLoc+moveY >= len(ta.TextContent) {
+	if cursorLoc+moveY >= textContentLen {
 		moveY = renderedY - ta.cursorY - 1
-		ta.textContentOffset = len(ta.TextContent) - renderedY - 1
+		ta.textContentOffset = textContentLen - renderedY - 1
 		ta.cursorY += moveY
 		ta.cursorX += moveX
 		return
@@ -150,11 +119,11 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	// If we are scrolling outside rendered content in y axis but there is more text
 	// scroll the screen and bound ypos to max allowed by bounding box
 	if moveY != 0 {
-		if moveY > 0 && ta.cursorY+moveY >= renderedY && len(ta.TextContent) >= renderedY {
+		if moveY > 0 && ta.cursorY+moveY >= renderedY && textContentLen >= renderedY {
 			// Scrolling down
 			ta.textContentOffset += moveY
-			if ta.textContentOffset+renderedY > len(ta.TextContent)-1 {
-				ta.textContentOffset = len(ta.TextContent) - renderedY - 1
+			if ta.textContentOffset+renderedY > textContentLen-1 {
+				ta.textContentOffset = textContentLen - renderedY - 1
 			}
 			ta.cursorX += moveX
 			return
@@ -168,6 +137,13 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 
 	ta.cursorX += moveX
 	ta.cursorY += moveY
+
+	if ta.cursorX < 0 {
+		ta.cursorX = 0
+	}
+	if ta.cursorY < 0 {
+		ta.cursorY = 0
+	}
 }
 
 func (ta *TextArea) getCursorLocInText() int {
@@ -198,6 +174,49 @@ func (ta *TextArea) RemoveChar() error {
 	ta.TextContent[textY] = currStr[:x-1] + currStr[x:]
 	ta.MoveCursor(-1, 0)
 	return nil
+}
+
+func (ta *TextArea) InsertNewline() {
+	currPos := ta.getCursorLocInText()
+	currText := ta.TextContent[currPos]
+	x := ta.cursorX
+	strOne, strTwo := currText[:x], currText[x:]
+	newTextContent := slices.Insert(ta.TextContent, currPos+1, strTwo)
+	newTextContent[currPos] = strOne
+	ta.TextContent = newTextContent
+	ta.MoveCursor(-ta.cursorX, 1)
+}
+
+func (ta *TextArea) Draw(screen *Screen) {
+	ta.Box.AddText(ta.buildTextContent())
+	ta.Box.Draw(screen)
+
+	screen.RenderCursor(ta.cursorX, ta.cursorY)
+}
+
+func (ta *TextArea) MoveCursorEndOfCurrLine() {
+	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY]) - 1
+	moveX := rowLen - ta.cursorX
+	ta.MoveCursor(moveX, 0)
+}
+
+func (ta *TextArea) MoveCursorBeginningOfCurrLine() {
+	ta.MoveCursor(-ta.cursorX, 0)
+}
+
+func (ta *TextArea) MoveCursorBeginningOfFile() {
+	ta.textContentOffset = 0
+	ta.lastUserXPos = 0
+	ta.cursorX = 0
+	ta.cursorY = 0
+}
+
+func (ta *TextArea) MoveCursorEndOfFile() {
+	ta.MoveCursor(-ta.cursorX, len(ta.TextContent)-ta.getCursorLocInText())
+}
+
+func (ta *TextArea) GetTextContentOffset() int {
+	return ta.textContentOffset
 }
 
 func (ta *TextArea) buildTextContent() string {
