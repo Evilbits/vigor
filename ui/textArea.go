@@ -64,7 +64,12 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 
 	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY])
 	if moveX != 0 {
-		ta.lastUserXPos = min(ta.cursorX+moveX, rowLen-1)
+		newUserXPos := min(ta.cursorX+moveX, rowLen-1)
+		// If we don't check here newUserXPos will be -1 on an empty row
+		if rowLen == 0 {
+			newUserXPos += 1
+		}
+		ta.lastUserXPos = newUserXPos
 	}
 
 	// Don't allow moving further on the x axis than the content
