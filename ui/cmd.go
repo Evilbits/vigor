@@ -41,6 +41,13 @@ func (cmd *Cmd) AppendRuneToCurrentCommand(char rune) {
 	cmd.CurrentCommand += string(char)
 }
 
+func (cmd *Cmd) DeleteLastCharFromCommand() {
+	if len(cmd.CurrentCommand) == 0 {
+		return
+	}
+	cmd.CurrentCommand = cmd.CurrentCommand[:len(cmd.CurrentCommand)-1]
+}
+
 func (cmd *Cmd) ResetCurrentCommand() {
 	cmd.CurrentCommand = ""
 }

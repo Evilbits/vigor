@@ -92,6 +92,8 @@ func (ed *Editor) handleCmdCommandKey(event *tcell.EventKey) {
 		ed.cmd.ExitCommandMode()
 	case tcell.KeyEnter:
 		ed.executeCmdCommand(ed.cmd.CurrentCommand)
+	case tcell.KeyBackspace, tcell.KeyBackspace2, tcell.KeyDelete:
+		ed.cmd.DeleteLastCharFromCommand()
 	default:
 		char := event.Rune()
 		ed.cmd.AppendRuneToCurrentCommand(char)

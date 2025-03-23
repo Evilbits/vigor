@@ -136,12 +136,14 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	}
 
 	_, renderedY := ta.Box.GetSize()
+	// TODO: Clean up this and next piece of logic
 	// Don't allow going outside Y axis of text. Simply bound the movement to the maximum rendered area that
 	// we allow movement within
 	if cursorLoc+moveY >= len(ta.TextContent) {
 		moveY = renderedY - ta.cursorY - 1
 		ta.textContentOffset = len(ta.TextContent) - renderedY - 1
 		ta.cursorY += moveY
+		ta.cursorX += moveX
 		return
 	}
 
