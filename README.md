@@ -29,8 +29,12 @@ There are lots of features that still need to be implemented. This is a non-exha
 * Saving to disk
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
 * Undo/redo
+* x axis scroll within file
 
 ## Implemented
-* Smart cursor behaviour. Keep state when moving between lines and navigate x pos according to where we have previously been. This is similar to how other IDEs implement cursors. Lots of interesting behaviours here. Examples include different behaviour of mouse cursor in Insert mode, so that we can insert at the end of a row, versus how we want it to behave in Visual mode. 
+* Smart cursor behaviour.
+    * Keeps track of x position when moving between lines of different length.
+    * Vim cursor movement motions such as `$`, `0`, and going to start (`g`) and end (`G`) of file.
+* Navigating a full file with y axis scroll (currently x axis is not supported).
 * Inserting and removing characters. 
 * Your favourite VIM commands like `:q`.

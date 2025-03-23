@@ -35,7 +35,7 @@ func (sb *StatusBar) Draw(screen *Screen) {
 		statusBarStr += sb.ActiveFileName
 	}
 	statusBarStr += statusBarSeparator()
-	statusBarStr += fmt.Sprintf("%v", ta.LastKeySeen)
+	statusBarStr += fmt.Sprintf("%v", ta.GetTextContentOffset())
 
 	sb.AddText(statusBarStr)
 	sb.Box.Draw(screen)

@@ -123,6 +123,14 @@ func (ed *Editor) handleVisualModeKey(ta *ui.TextArea, char rune) {
 	case 'a':
 		ta.Mode = ui.InsertMode
 		ta.MoveCursor(1, 0)
+	case '$':
+		ta.MoveCursorEndOfCurrLine()
+	case '0':
+		ta.MoveCursorBeginningOfCurrLine()
+	case 'g':
+		ta.MoveCursorBeginningOfFile()
+	case 'G':
+		ta.MoveCursorEndOfFile()
 	case ':':
 		ed.cmd.StartCommandMode()
 	}

@@ -29,8 +29,12 @@ type TextArea struct {
 	Mode Mode
 
 	// Text content split by line delimiters
-	TextContent      []string
+	TextContent []string
+	// Allows y axis scroll of text ouside rendered content
+	textContentOffset int
+
 	cursorX, cursorY int
+
 	// Stores last x pos that a user moved to. This allows better behaviour when going from a long line
 	// to a short line and then to a long line again
 	lastUserXPos int
@@ -41,8 +45,9 @@ type TextArea struct {
 
 func NewTextArea() *TextArea {
 	textArea := &TextArea{
-		cursorX: 0,
-		cursorY: 0,
+		cursorX:           0,
+		cursorY:           0,
+		textContentOffset: 0,
 	}
 	textArea.Box = NewBox()
 
@@ -50,19 +55,46 @@ func NewTextArea() *TextArea {
 }
 
 func (ta *TextArea) Draw(screen *Screen) {
-	ta.Box.AddText(buildText(ta.TextContent))
+	ta.Box.AddText(ta.buildTextContent())
 	ta.Box.Draw(screen)
 
 	screen.RenderCursor(ta.cursorX, ta.cursorY)
 }
 
+func (ta *TextArea) MoveCursorEndOfCurrLine() {
+	rowLen := len(ta.TextContent[ta.cursorY]) - 1
+	moveX := rowLen - ta.cursorX
+	ta.MoveCursor(moveX, 0)
+}
+
+func (ta *TextArea) MoveCursorBeginningOfCurrLine() {
+	ta.MoveCursor(-ta.cursorX, 0)
+}
+
+func (ta *TextArea) MoveCursorBeginningOfFile() {
+	ta.textContentOffset = 0
+	ta.lastUserXPos = 0
+	ta.MoveCursor(-ta.cursorX, -ta.cursorY)
+}
+
+func (ta *TextArea) MoveCursorEndOfFile() {
+	ta.lastUserXPos = 0
+	ta.MoveCursor(-ta.cursorX, 200)
+}
+
+func (ta *TextArea) GetTextContentOffset() int {
+	return ta.textContentOffset
+}
+
 func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
-	if (ta.cursorX+moveX < x) || (ta.cursorY+moveY < y) {
+	if ta.cursorX+moveX < x {
 		return
+	} else if moveY < 0 && ta.cursorY+moveY < y {
+		ta.textContentOffset = max(ta.textContentOffset+moveY, 0)
 	}
-	width, height := ta.Box.GetSize()
-	if (ta.cursorX+moveX >= width) || (ta.cursorY+moveY >= height) {
+	// If going out of bounds towards negative
+	if ta.cursorY+moveY < y {
 		return
 	}
 
@@ -107,8 +139,26 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 		}
 	}
 
-	// Don't allow going outside Y axis of text
+	_, renderedY := ta.Box.GetSize()
+	// Don't allow going outside Y axis of text. Simply bound the movement to the maximum rendered area that
+	// we allow movement within
 	if ta.cursorY+moveY >= len(ta.TextContent) {
+		moveY = renderedY - ta.cursorY - 1
+		ta.textContentOffset = len(ta.TextContent) - renderedY - 1
+		ta.cursorY += moveY
+		return
+	}
+
+	// If we are scrolling outside rendered content in y axis but there is more text
+	// scroll the screen and bound ypos to max allowed by bounding box
+	if moveY != 0 && ta.cursorY+moveY >= renderedY && len(ta.TextContent) >= renderedY {
+		if ta.textContentOffset+renderedY >= len(ta.TextContent) {
+			return
+		}
+		ta.textContentOffset += moveY
+		if ta.textContentOffset+renderedY > len(ta.TextContent)-1 {
+			ta.textContentOffset = len(ta.TextContent) - renderedY - 1
+		}
 		return
 	}
 
@@ -143,6 +193,20 @@ func (ta *TextArea) RemoveChar() error {
 	return nil
 }
 
-func buildText(textArr []string) string {
-	return strings.Join(textArr, fmt.Sprint(LF))
+func (ta *TextArea) buildTextContent() string {
+	offset := ta.textContentOffset
+	targetIdx := ta.getMaxAllowedYTargetOffset()
+	textToRender := ta.TextContent[offset:targetIdx]
+
+	return strings.Join(textToRender, fmt.Sprint(LF))
+}
+
+func (ta *TextArea) getMaxAllowedYTargetOffset() int {
+	_, y := ta.Box.GetSize()
+	offset := ta.textContentOffset
+	targetIdx := y + offset
+	if targetIdx >= len(ta.TextContent) {
+		targetIdx = len(ta.TextContent) - 1
+	}
+	return targetIdx
 }
