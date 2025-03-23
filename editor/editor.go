@@ -13,6 +13,8 @@ import (
 type Editor struct {
 	screen *ui.Screen
 
+	activeFile *File
+
 	cmd *ui.Cmd
 }
 
@@ -21,15 +23,6 @@ func NewEditor() *Editor {
 	editor.screen = ui.NewScreen()
 	editor.screen.OnKeyPress = editor.HandleKey
 	return editor
-}
-
-func readFile(path string) []string {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-
-	return strings.Split(string(data[:]), fmt.Sprint(ui.LF))
 }
 
 func filePathToFileName(filepath string) string {
@@ -41,7 +34,8 @@ func filePathToFileName(filepath string) string {
 }
 
 func (editor *Editor) Start(filepath string) {
-	text := readFile(filepath)
+	editor.activeFile = NewFile(filepath)
+	text := editor.activeFile.ReadFile()
 	textArea, cmd, statusBar, grid := ReadConf()
 	editor.cmd = cmd
 	editor.screen.Grid = grid
@@ -105,6 +99,16 @@ func (ed *Editor) executeCmdCommand(command string) {
 	switch command {
 	case "q", "quit":
 		ed.handleExit()
+	case "w", "write":
+		ta, err := ed.screen.GetFocusedEditableArea()
+		if err != nil {
+			panic(err)
+		}
+		err = ed.activeFile.WriteFile(ta.TextContent)
+		if err != nil {
+			panic(err)
+		}
+		ed.cmd.AddText(fmt.Sprintf("Successfully wrote to: %v", ed.activeFile.path))
 	default:
 		ed.cmd.SetError(fmt.Sprintf("Invalid command: %s", command))
 	}

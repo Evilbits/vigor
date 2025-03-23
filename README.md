@@ -26,7 +26,7 @@ There are lots of features that still need to be implemented. This is a non-exha
 * Reading a config when initiating the `Editor`
 * Linenumbers in `TextArea`
 * Navigating between files
-* Saving to disk
+* Buffer file reads
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
 * Undo/redo
 * x axis scroll within file
@@ -37,4 +37,4 @@ There are lots of features that still need to be implemented. This is a non-exha
     * Vim cursor movement motions such as `$`, `0`, and going to start (`g`) and end (`G`) of file.
 * Navigating a full file with y axis scroll (currently x axis is not supported).
 * Inserting and removing characters. 
-* Your favourite VIM commands like `:q`.
+* Your favourite VIM commands like `:q` and `:w`.
