@@ -175,26 +175,25 @@ func (ta *TextArea) getCursorLocInText() int {
 // Insert char at current cursor position
 // Since TextContent is split by line we can use y as an index into our TextContent
 func (ta *TextArea) InsertChar(char rune) {
-	x, y := ta.cursorX, ta.cursorY
-	if y > len(ta.TextContent) {
-		return
-	}
-	currStr := ta.TextContent[y]
+	x, _ := ta.cursorX, ta.cursorY
+	textY := ta.getCursorLocInText()
+	currStr := ta.TextContent[textY]
 	if x > len(currStr) {
 		return
 	}
 	ta.lastUserXPos += 1
-	ta.TextContent[y] = currStr[:x] + string(char) + currStr[x:]
+	ta.TextContent[textY] = currStr[:x] + string(char) + currStr[x:]
 }
 
 // Removes a char at current cursor position
 func (ta *TextArea) RemoveChar() error {
-	x, y := ta.cursorX, ta.cursorY
-	currStr := ta.TextContent[y]
-	if x == 0 || x > len(currStr) || y > len(ta.TextContent) {
+	x := ta.cursorX
+	textY := ta.getCursorLocInText()
+	currStr := ta.TextContent[textY]
+	if x == 0 || x > len(currStr) || textY > len(ta.TextContent) {
 		return errors.New("Cannot remove char out of bounds")
 	}
-	ta.TextContent[y] = currStr[:x-1] + currStr[x:]
+	ta.TextContent[textY] = currStr[:x-1] + currStr[x:]
 	ta.MoveCursor(-1, 0)
 	return nil
 }
