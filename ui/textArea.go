@@ -34,7 +34,8 @@ type TextArea struct {
 	// Allows y axis scroll of text ouside rendered content
 	textContentOffset int
 
-	cursorX, cursorY int
+	cursorX, cursorY                     int
+	cursorStyleVisual, cursorStyleInsert tcell.CursorStyle
 
 	// Stores last x pos that a user moved to. This allows better behaviour when going from a long line
 	// to a short line and then to a long line again
@@ -49,6 +50,8 @@ func NewTextArea() *TextArea {
 		cursorX:           0,
 		cursorY:           0,
 		textContentOffset: 0,
+		cursorStyleVisual: tcell.CursorStyleDefault,
+		cursorStyleInsert: tcell.CursorStyleSteadyBar,
 	}
 	textArea.Box = NewBox()
 
@@ -196,7 +199,11 @@ func (ta *TextArea) Draw(screen *Screen) {
 	ta.Box.AddText(ta.buildTextContent())
 	ta.Box.Draw(screen)
 
-	screen.RenderCursor(ta.cursorX, ta.cursorY)
+	cursorStyle := ta.cursorStyleVisual
+	if ta.Mode == InsertMode {
+		cursorStyle = ta.cursorStyleInsert
+	}
+	screen.RenderCursor(ta.cursorX, ta.cursorY, cursorStyle)
 }
 
 func (ta *TextArea) MoveCursorEndOfCurrLine() {

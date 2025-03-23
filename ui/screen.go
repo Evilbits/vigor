@@ -36,11 +36,9 @@ func (screen *Screen) WriteChar(x int, y int, char rune, combining []rune, backg
 	screen.innerScreen.SetContent(x, y, char, nil, background)
 }
 
-func (screen *Screen) RenderCursor(x int, y int) {
-	cursorColor := tcell.GetColor(screen.cursorColor)
-	cursorStyle := tcell.StyleDefault.Background(cursorColor)
-	primary, combining, _, _ := screen.innerScreen.GetContent(x, y)
-	screen.innerScreen.SetContent(x, y, primary, combining, cursorStyle)
+func (screen *Screen) RenderCursor(x int, y int, cursorStyle tcell.CursorStyle) {
+	screen.innerScreen.ShowCursor(x, y)
+	screen.innerScreen.SetCursorStyle(cursorStyle)
 }
 
 func (screen *Screen) Size() (width int, height int) {
