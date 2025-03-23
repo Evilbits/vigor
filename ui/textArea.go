@@ -159,8 +159,8 @@ func (ta *TextArea) InsertChar(char rune) {
 	if x > len(currStr) {
 		return
 	}
-	ta.lastUserXPos += 1
 	ta.TextContent[textY] = currStr[:x] + string(char) + currStr[x:]
+	ta.MoveCursor(1, 0)
 }
 
 // Removes a char at current cursor position

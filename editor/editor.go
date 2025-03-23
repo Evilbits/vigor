@@ -83,7 +83,6 @@ func (ed *Editor) handleInsertModeEvent(ta *ui.TextArea, event *tcell.EventKey) 
 		ta.InsertNewline()
 	default:
 		ta.InsertChar(char)
-		ta.MoveCursor(1, 0)
 	}
 }
 
