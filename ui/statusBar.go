@@ -9,10 +9,13 @@ type StatusBar struct {
 
 	monitoredTextArea *TextArea
 	ActiveFileName    string
+	DebugEnabled      bool
 }
 
 func NewStatusBar(ta *TextArea) *StatusBar {
-	sb := &StatusBar{}
+	sb := &StatusBar{
+		DebugEnabled: false,
+	}
 	sb.Box = NewBox()
 	sb.monitoredTextArea = ta
 	return sb
@@ -25,7 +28,11 @@ func statusBarSeparator() string {
 func (sb *StatusBar) Draw(screen *Screen) {
 	ta := sb.monitoredTextArea
 	statusBarStr := ""
-	statusBarStr += fmt.Sprintf("(%v [%v], %v, {%v})", ta.cursorX, ta.lastUserXPos, ta.cursorY, ta.getCursorLocInText())
+	if sb.DebugEnabled {
+		statusBarStr += fmt.Sprintf("(%v [%v], %v, {%v})", ta.cursorX, ta.lastUserXPos, ta.cursorY, ta.getCursorLocInText())
+	} else {
+		statusBarStr += fmt.Sprintf("(%v , %v)", ta.cursorX, ta.cursorY)
+	}
 
 	statusBarStr += statusBarSeparator()
 	statusBarStr += fmt.Sprintf("[%v]", ta.Mode)
@@ -34,8 +41,10 @@ func (sb *StatusBar) Draw(screen *Screen) {
 		statusBarStr += statusBarSeparator()
 		statusBarStr += sb.ActiveFileName
 	}
-	statusBarStr += statusBarSeparator()
-	statusBarStr += fmt.Sprintf("%v", ta.GetTextContentOffset())
+	if sb.DebugEnabled {
+		statusBarStr += statusBarSeparator()
+		statusBarStr += fmt.Sprintf("Offset: %v", ta.GetTextContentOffset())
+	}
 
 	sb.AddText(statusBarStr)
 	sb.Box.Draw(screen)

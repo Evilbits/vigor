@@ -5,7 +5,7 @@ import (
 )
 
 // TODO: Implement actual config reading
-func ReadConf() (*ui.TextArea, *ui.Cmd, *ui.StatusBar, *ui.Grid) {
+func ReadConf(debug bool) (*ui.TextArea, *ui.Cmd, *ui.StatusBar, *ui.Grid) {
 	rootGrid := ui.NewGrid()
 	textArea := ui.NewTextArea()
 
@@ -13,6 +13,7 @@ func ReadConf() (*ui.TextArea, *ui.Cmd, *ui.StatusBar, *ui.Grid) {
 
 	statusBar := ui.NewStatusBar(textArea)
 	statusBar.SetBackgroundColor("grey")
+	statusBar.DebugEnabled = debug
 
 	rootGrid.
 		SetRows(0, 1, 1).

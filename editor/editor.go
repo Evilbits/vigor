@@ -33,10 +33,10 @@ func filePathToFileName(filepath string) string {
 	return filepath
 }
 
-func (editor *Editor) Start(filepath string) {
+func (editor *Editor) Start(filepath string, debug bool) {
 	editor.activeFile = NewFile(filepath)
 	text := editor.activeFile.ReadFile()
-	textArea, cmd, statusBar, grid := ReadConf()
+	textArea, cmd, statusBar, grid := ReadConf(debug)
 	editor.cmd = cmd
 	editor.screen.Grid = grid
 
