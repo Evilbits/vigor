@@ -77,7 +77,7 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 
 	// Don't allow moving further on the x axis than the content
 	if ta.cursorX+moveX > rowLen {
-		return
+		moveX = rowLen - 1 - ta.cursorX
 	}
 	// moveY is required to be checked here as we can be at x+1 position after leaving insert mode
 	if rowLen > 0 && ta.cursorX+moveX >= rowLen && ta.Mode == VisualMode && moveY == 0 {
@@ -175,13 +175,37 @@ func (ta *TextArea) InsertChar(char rune) {
 func (ta *TextArea) RemoveChar() error {
 	x := ta.cursorX
 	textY := ta.getCursorLocInText()
-	currStr := ta.TextContent[textY]
-	if x == 0 || x > len(currStr) || textY > len(ta.TextContent) {
-		return errors.New("Cannot remove char out of bounds")
+
+	if x == 0 && textY != 0 {
+		// If we are deleting from the beginning of our current line we need to merge with line above
+		prevLineIdx := textY - 1
+		prevLineLen := len(ta.TextContent[prevLineIdx])
+		// Move first to make it easier to move to end of the line
+		ta.MoveCursor(0, -1)
+		ta.MoveCursorEndOfCurrLine()
+
+		if prevLineLen > 0 {
+			newLine := []string{ta.TextContent[prevLineIdx], ta.TextContent[textY]}
+			ta.TextContent[prevLineIdx] = strings.Join(newLine, "")
+			ta.DeleteLine(textY)
+		} else {
+			// Line is empty so we must delete it
+			ta.DeleteLine(prevLineIdx)
+		}
+	} else {
+		currStr := ta.TextContent[textY]
+		if x == 0 || x > len(currStr) || textY > len(ta.TextContent) {
+			return errors.New("Cannot remove char out of bounds")
+		}
+
+		ta.TextContent[textY] = currStr[:x-1] + currStr[x:]
+		ta.MoveCursor(-1, 0)
 	}
-	ta.TextContent[textY] = currStr[:x-1] + currStr[x:]
-	ta.MoveCursor(-1, 0)
 	return nil
+}
+
+func (ta *TextArea) DeleteLine(idx int) {
+	ta.TextContent = slices.Delete(ta.TextContent, idx, idx+1)
 }
 
 func (ta *TextArea) InsertNewline() {
@@ -207,7 +231,13 @@ func (ta *TextArea) Draw(screen *Screen) {
 }
 
 func (ta *TextArea) MoveCursorEndOfCurrLine() {
-	rowLen := len(ta.TextContent[ta.textContentOffset+ta.cursorY]) - 1
+	var rowLen int
+	if ta.Mode == VisualMode {
+		rowLen = len(ta.TextContent[ta.textContentOffset+ta.cursorY]) - 1
+	} else {
+		rowLen = len(ta.TextContent[ta.textContentOffset+ta.cursorY])
+	}
+
 	moveX := rowLen - ta.cursorX
 	ta.MoveCursor(moveX, 0)
 }
