@@ -1,0 +1,88 @@
+package ui
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/gdamore/tcell/v2"
+)
+
+type FileBrowser struct {
+	*Box
+
+	Files   []os.DirEntry
+	CurrDir string
+
+	cursorY int
+}
+
+func NewFileBrowser(currDir string) *FileBrowser {
+	fileBrowser := &FileBrowser{
+		CurrDir: currDir,
+		cursorY: 0,
+	}
+	fileBrowser.Box = NewBox()
+	return fileBrowser
+}
+
+func (fb *FileBrowser) MoveCursor(moveY int) {
+	fb.cursorY += moveY
+	if fb.cursorY < 0 {
+		fb.cursorY = 0
+	}
+	maxYPos := len(fb.Files) - 1
+	if fb.cursorY > maxYPos {
+		fb.cursorY = maxYPos
+	}
+}
+
+func (fb *FileBrowser) Update() {
+	entries, err := os.ReadDir(fb.CurrDir)
+	if err != nil {
+		panic(err)
+	}
+
+	fb.Files = entries
+}
+
+func (fb *FileBrowser) Draw(screen *Screen) {
+	if len(fb.Files) == 0 {
+		fb.Update()
+	}
+
+	fb.Box.AddText(fb.buildTextContent())
+	fb.Box.Draw(screen)
+	screen.RenderCursor(0, fb.cursorY, tcell.CursorStyleDefault)
+}
+
+func (fb *FileBrowser) buildTextContent() string {
+	var dirs []os.DirEntry
+	var files []os.DirEntry
+	var output string
+
+	for _, entry := range fb.Files {
+		if entry.IsDir() {
+			dirs = append(dirs, entry)
+		} else {
+			files = append(files, entry)
+		}
+	}
+
+	for _, dir := range dirs {
+		output += fb.renderEntry(dir)
+	}
+	for _, file := range files {
+		output += fb.renderEntry(file)
+	}
+	return output
+}
+
+func (fb *FileBrowser) renderEntry(entry os.DirEntry) string {
+	var output string
+	output += entry.Name()
+	if entry.IsDir() {
+		output += "/"
+	}
+	output += fmt.Sprint(LF)
+	return output
+}

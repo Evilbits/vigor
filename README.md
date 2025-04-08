@@ -3,7 +3,7 @@
 VIgor is a fun side project of implementing a terminal based IDE written in Go based on Vim behaviour. This is my first project in Go so it therefore also acts as my entrypoint into coding in Go.
 
 
-As this is a pet project I specifically wanted to implement the UI with a low-level library instead of using libraries such as [tview](https://github.com/rivo/tview).
+As this is a pet project I specifically wanted to implement the UI with a low-level library instead of using libraries such as [tview](https://github.com/rivo/tview). This project exists only as a way to try out Go through a fun side project.
 
 ## Usage
 To run from source simply execute
@@ -30,6 +30,7 @@ There are lots of features that still need to be implemented. This is a non-exha
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
 * Undo/redo
 * x axis scroll within file
+* LSP integration and syntax highlighting
 
 ## Implemented
 * Smart cursor behaviour.
@@ -38,3 +39,4 @@ There are lots of features that still need to be implemented. This is a non-exha
 * Navigating a full file with y axis scroll (currently x axis is not supported).
 * Inserting and removing characters. 
 * Your favourite VIM commands like `:q` and `:w`.
+* File browsing using `:e`

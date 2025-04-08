@@ -13,6 +13,8 @@ type Grid struct {
 	items []*gridItem
 	// Row array containing metadata regarding row size
 	rows []int
+	// A pointer directly to whichever item is focused
+	focusedItem *gridItem
 }
 
 func NewGrid() *Grid {
@@ -33,27 +35,61 @@ func (gr *Grid) SetRows(rows ...int) *Grid {
 // Add an item to the grid. Item order matters as we expect gr.rows[0] to be filled by gr.items[0].
 // Adding an item without a corresponding row will lead to the item not being rendered.
 func (gr *Grid) AddItem(item Drawable, focused bool) *Grid {
-	gr.items = append(gr.items, &gridItem{
+	gridItem := &gridItem{
 		Item:    item,
 		focused: focused,
-	})
+	}
+	if focused {
+		if gr.focusedItem != nil {
+			// TODO: Handle this error
+			panic("Grid cannot have two focused items")
+		}
+
+		if !itemIsFocusable(item) {
+			panic("Item type is not focusable!")
+		}
+
+		gr.focusedItem = gridItem
+	}
+	gr.items = append(gr.items, gridItem)
 	return gr
+}
+
+func itemIsFocusable(item Drawable) bool {
+	switch item.(type) {
+	case *TextArea:
+		return true
+	case *FileBrowser:
+		return true
+	default:
+		return false
+	}
 }
 
 func (gr *Grid) GetItem(idx int) *gridItem {
 	return gr.items[idx]
 }
 
-func (gr *Grid) GetFocusedEditableArea() (*TextArea, error) {
-	for _, gridItem := range gr.items {
-		if gridItem.focused {
-			if textArea, ok := gridItem.Item.(*TextArea); ok {
-				return textArea, nil
-			}
-			return nil, errors.New("Focused item must be a TextArea.")
-		}
+func (gr *Grid) GetFocusedEditableArea() (Drawable, error) {
+	if gr.focusedItem != nil {
+		return gr.focusedItem.Item, nil
 	}
 	return nil, errors.New("No focused item found.")
+}
+
+func (gr *Grid) ReplaceCurrentFocusedEditableArea(replacement Drawable) error {
+	newFocusedItem := &gridItem{
+		Item:    replacement,
+		focused: true,
+	}
+	for idx, gridItem := range gr.items {
+		if gridItem == gr.focusedItem {
+			gr.items[idx] = newFocusedItem
+			gr.focusedItem = newFocusedItem
+			return nil
+		}
+	}
+	return errors.New("No focused item found!")
 }
 
 func (gr *Grid) GetStatusBar() (*StatusBar, error) {

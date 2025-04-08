@@ -40,9 +40,6 @@ type TextArea struct {
 	// Stores last x pos that a user moved to. This allows better behaviour when going from a long line
 	// to a short line and then to a long line again
 	lastUserXPos int
-
-	// Debug
-	LastKeySeen tcell.Key
 }
 
 func NewTextArea() *TextArea {
