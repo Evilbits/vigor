@@ -28,28 +28,26 @@ func currentDir() (string, error) {
 	return os.Getwd()
 }
 
-func (editor *Editor) LoadFile(entry os.DirEntry) {
-	file := NewFile(entry.Name())
+func (editor *Editor) LoadFile(file *ViFile) {
 	text := file.ReadFileContents()
 
-	editor.cmd.AddText(file.absPath)
-
+	editor.activeFile = file
 	editor.textArea.TextContent = text
 	editor.statusBar.ActiveFileName = file.GetFileName()
 }
 
 func (editor *Editor) Start(filepath string, debug bool) {
-	editor.activeFile = NewFile(filepath)
-	text := editor.activeFile.ReadFileContents()
+	startFile := NewFile(filepath)
+	editor.activeFile = startFile
+
 	textArea, cmd, statusBar, grid := ReadConf(debug)
 	editor.cmd = cmd
 	editor.screen.Grid = grid
 	editor.statusBar = statusBar
-
-	textArea.TextContent = text
-	statusBar.ActiveFileName = editor.activeFile.GetFileName()
-
 	editor.textArea = textArea
+
+	editor.LoadFile(startFile)
+
 	currDir, err := currentDir()
 	if err != nil {
 		panic("Could not resolve current directory")

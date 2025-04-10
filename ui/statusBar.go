@@ -44,6 +44,8 @@ func (sb *StatusBar) Draw(screen *Screen) {
 	if sb.DebugEnabled {
 		statusBarStr += statusBarSeparator()
 		statusBarStr += fmt.Sprintf("Offset: %v", ta.GetTextContentOffset())
+		statusBarStr += statusBarSeparator()
+		statusBarStr += fmt.Sprintf("TextLen: %v", len(ta.TextContent))
 	}
 
 	sb.AddText(statusBarStr)

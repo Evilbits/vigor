@@ -115,7 +115,7 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	// we allow movement within
 	if cursorLoc+moveY >= textContentLen {
 		moveY = renderedY - ta.cursorY - 1
-		ta.textContentOffset = textContentLen - renderedY - 1
+		ta.textContentOffset = textContentLen - renderedY
 		ta.cursorY += moveY
 		ta.cursorX += moveX
 		return
@@ -127,16 +127,14 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 		if moveY > 0 && ta.cursorY+moveY >= renderedY && textContentLen >= renderedY {
 			// Scrolling down
 			ta.textContentOffset += moveY
-			if ta.textContentOffset+renderedY > textContentLen-1 {
-				ta.textContentOffset = textContentLen - renderedY - 1
+			if ta.textContentOffset+renderedY > textContentLen {
+				ta.textContentOffset = textContentLen - renderedY
 			}
-			ta.cursorX += moveX
-			return
+			moveY = 0
 		} else if moveY < 0 && ta.cursorY+moveY < y {
 			// Scrolling up
 			ta.textContentOffset = max(ta.textContentOffset+moveY, 0)
-			ta.cursorX += moveX
-			return
+			moveY = 0
 		}
 	}
 
@@ -269,9 +267,6 @@ func (ta *TextArea) buildTextContent() string {
 func (ta *TextArea) getMaxAllowedYTargetOffset() int {
 	_, y := ta.Box.GetSize()
 	offset := ta.textContentOffset
-	targetIdx := y + offset
-	if targetIdx >= len(ta.TextContent) {
-		targetIdx = len(ta.TextContent) - 1
-	}
+	targetIdx := min(y+offset, len(ta.TextContent))
 	return targetIdx
 }

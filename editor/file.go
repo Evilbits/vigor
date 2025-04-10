@@ -1,12 +1,11 @@
 package editor
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/evilbits/vigor/ui"
 	"os"
 	"path/filepath"
 	"strings"
-	// "github.com/evilbits/vigor/ui"
 )
 
 type ViFile struct {
@@ -45,14 +44,13 @@ func readFile(path string) (*os.File, error) {
 }
 
 func (f *ViFile) ReadFileContents() []string {
-	scanner := bufio.NewScanner(f)
-	var lines []string
-
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
+	content, err := os.ReadFile(f.absPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
+		return nil
 	}
 
-	return lines
+	return strings.Split(string(content), fmt.Sprint(ui.LF))
 }
 
 func (f *ViFile) WriteFile(text []string) error {
