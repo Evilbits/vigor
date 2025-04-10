@@ -6,8 +6,6 @@ import (
 )
 
 func (ed *Editor) HandleKey(event *tcell.EventKey) {
-	char := event.Rune()
-
 	fa, err := ed.screen.GetFocusedEditableArea()
 	if err != nil {
 		panic(err)
@@ -19,7 +17,7 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 			if ed.cmd.CommandMode {
 				ed.handleCmdCommandEvent(event)
 			} else {
-				ed.handleVisualModeKey(typedFa, char)
+				ed.handleVisualModeKey(typedFa, event.Rune())
 			}
 		case ui.InsertMode:
 			ed.handleInsertModeEvent(typedFa, event)
@@ -28,19 +26,24 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 		if ed.cmd.CommandMode {
 			ed.handleCmdCommandEvent(event)
 		} else {
-			ed.handleFileBrowserKey(typedFa, char)
+			ed.handleFileBrowserKey(typedFa, event)
 		}
 	}
 }
 
-func (ed *Editor) handleFileBrowserKey(fb *ui.FileBrowser, char rune) {
-	switch char {
-	case 'j':
-		fb.MoveCursor(1)
-	case 'k':
-		fb.MoveCursor(-1)
-	case ':':
-		ed.cmd.StartCommandMode()
+func (ed *Editor) handleFileBrowserKey(fb *ui.FileBrowser, event *tcell.EventKey) {
+	switch event.Key() {
+	case tcell.KeyEnter:
+		ed.LoadFile(fb.GetCurrentFile())
+	default:
+		switch event.Rune() {
+		case 'j':
+			fb.MoveCursor(1)
+		case 'k':
+			fb.MoveCursor(-1)
+		case ':':
+			ed.cmd.StartCommandMode()
+		}
 	}
 }
 

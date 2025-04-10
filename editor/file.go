@@ -1,42 +1,77 @@
 package editor
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
-
-	"github.com/evilbits/vigor/ui"
+	// "github.com/evilbits/vigor/ui"
 )
 
-type File struct {
-	path string
+type ViFile struct {
+	*os.File
+	absPath string
 }
 
-func NewFile(path string) *File {
-	file := &File{
-		path: path,
-	}
-	return file
-}
-
-func (f *File) ReadFile() []string {
-	data, err := os.ReadFile(f.path)
+func NewFile(path string) *ViFile {
+	file, err := readFile(path)
 	if err != nil {
-		panic(err)
+		panic("Tried opening non existant file")
+	}
+	absPath, err := filepath.Abs(file.Name())
+	if err != nil {
+		panic("Could not resolve absolute path for file")
 	}
 
-	return strings.Split(string(data[:]), fmt.Sprint(ui.LF))
+	viFile := &ViFile{
+		File:    file,
+		absPath: absPath,
+	}
+	return viFile
 }
 
-func (f *File) WriteFile(text []string) error {
-	err := assertFileExists(f.path)
+func readFile(path string) (*os.File, error) {
+	err := assertFileExists(path)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+func (f *ViFile) ReadFileContents() []string {
+	scanner := bufio.NewScanner(f)
+	var lines []string
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	return lines
+}
+
+func (f *ViFile) WriteFile(text []string) error {
+	err := assertFileExists(f.absPath)
 	if err != nil {
 		panic(err)
 	}
 
 	data := strings.Join(text, "\n")
 
-	return os.WriteFile(f.path, []byte(data), 0644)
+	return os.WriteFile(f.absPath, []byte(data), 0644)
+}
+
+func (f *ViFile) GetFileName() string {
+	if strings.Contains(f.absPath, "/") {
+		splitStr := strings.Split(f.absPath, "/")
+		return fmt.Sprint(splitStr[len(splitStr)-1])
+	}
+	return f.absPath
 }
 
 func assertFileExists(filepath string) error {

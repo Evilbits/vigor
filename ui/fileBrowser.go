@@ -36,13 +36,30 @@ func (fb *FileBrowser) MoveCursor(moveY int) {
 	}
 }
 
+func (fb *FileBrowser) GetCurrentFile() os.DirEntry {
+	return fb.Files[fb.cursorY]
+}
+
 func (fb *FileBrowser) Update() {
 	entries, err := os.ReadDir(fb.CurrDir)
 	if err != nil {
 		panic(err)
 	}
 
-	fb.Files = entries
+	// Order so that directories come first
+	var dirs []os.DirEntry
+	var files []os.DirEntry
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			dirs = append(dirs, entry)
+		} else {
+			files = append(files, entry)
+		}
+	}
+	allEntries := append(dirs, files...)
+
+	fb.Files = allEntries
 }
 
 func (fb *FileBrowser) Draw(screen *Screen) {
@@ -56,23 +73,9 @@ func (fb *FileBrowser) Draw(screen *Screen) {
 }
 
 func (fb *FileBrowser) buildTextContent() string {
-	var dirs []os.DirEntry
-	var files []os.DirEntry
 	var output string
-
-	for _, entry := range fb.Files {
-		if entry.IsDir() {
-			dirs = append(dirs, entry)
-		} else {
-			files = append(files, entry)
-		}
-	}
-
-	for _, dir := range dirs {
+	for _, dir := range fb.Files {
 		output += fb.renderEntry(dir)
-	}
-	for _, file := range files {
-		output += fb.renderEntry(file)
 	}
 	return output
 }

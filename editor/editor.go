@@ -1,9 +1,7 @@
 package editor
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/evilbits/vigor/ui"
 )
@@ -11,9 +9,10 @@ import (
 type Editor struct {
 	screen *ui.Screen
 
-	activeFile  *File
+	activeFile  *ViFile
 	textArea    *ui.TextArea
 	fileBrowser *ui.FileBrowser
+	statusBar   *ui.StatusBar
 
 	cmd *ui.Cmd
 }
@@ -25,27 +24,30 @@ func NewEditor() *Editor {
 	return editor
 }
 
-func filePathToFileName(filepath string) string {
-	if strings.Contains(filepath, "/") {
-		splitStr := strings.Split(filepath, "/")
-		return fmt.Sprint(splitStr[len(splitStr)-1])
-	}
-	return filepath
-}
-
 func currentDir() (string, error) {
 	return os.Getwd()
 }
 
+func (editor *Editor) LoadFile(entry os.DirEntry) {
+	file := NewFile(entry.Name())
+	text := file.ReadFileContents()
+
+	editor.cmd.AddText(file.absPath)
+
+	editor.textArea.TextContent = text
+	editor.statusBar.ActiveFileName = file.GetFileName()
+}
+
 func (editor *Editor) Start(filepath string, debug bool) {
 	editor.activeFile = NewFile(filepath)
-	text := editor.activeFile.ReadFile()
+	text := editor.activeFile.ReadFileContents()
 	textArea, cmd, statusBar, grid := ReadConf(debug)
 	editor.cmd = cmd
 	editor.screen.Grid = grid
+	editor.statusBar = statusBar
 
 	textArea.TextContent = text
-	statusBar.ActiveFileName = filePathToFileName(filepath)
+	statusBar.ActiveFileName = editor.activeFile.GetFileName()
 
 	editor.textArea = textArea
 	currDir, err := currentDir()

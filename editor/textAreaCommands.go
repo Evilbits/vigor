@@ -38,7 +38,7 @@ func (ed *Editor) executeCmdCommand(command string) {
 			if err != nil {
 				panic(err)
 			}
-			ed.cmd.AddText(fmt.Sprintf("Successfully wrote to: %v", ed.activeFile.path))
+			ed.cmd.AddText(fmt.Sprintf("Successfully wrote to: %v", ed.activeFile.absPath))
 		} else {
 			ed.cmd.SetError("Tried writing to a focused area that doesn't support writing")
 		}
