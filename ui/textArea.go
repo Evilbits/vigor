@@ -109,18 +109,13 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 		}
 	}
 
-	_, renderedY := ta.Box.GetSize()
-	// TODO: Clean up this and next piece of logic
 	// Don't allow going outside Y axis of text. Simply bound the movement to the maximum rendered area that
 	// we allow movement within
 	if cursorLoc+moveY >= textContentLen {
-		moveY = renderedY - ta.cursorY - 1
-		ta.textContentOffset = textContentLen - renderedY
-		ta.cursorY += moveY
-		ta.cursorX += moveX
 		return
 	}
 
+	_, renderedY := ta.Box.GetSize()
 	// If we are scrolling outside rendered content in y axis but there is more text
 	// scroll the screen and bound ypos to max allowed by bounding box
 	if moveY != 0 {
@@ -131,10 +126,13 @@ func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 				ta.textContentOffset = textContentLen - renderedY
 			}
 			moveY = 0
+			// Make sure to scroll yPos to the last possible location so cursor ends on last line
+			ta.cursorY = renderedY - 1
 		} else if moveY < 0 && ta.cursorY+moveY < y {
 			// Scrolling up
 			ta.textContentOffset = max(ta.textContentOffset+moveY, 0)
 			moveY = 0
+			ta.cursorY = 0
 		}
 	}
 
@@ -249,7 +247,7 @@ func (ta *TextArea) MoveCursorBeginningOfFile() {
 }
 
 func (ta *TextArea) MoveCursorEndOfFile() {
-	ta.MoveCursor(-ta.cursorX, len(ta.TextContent)-ta.getCursorLocInText())
+	ta.MoveCursor(-ta.cursorX, len(ta.TextContent)-ta.getCursorLocInText()-1)
 }
 
 func (ta *TextArea) GetTextContentOffset() int {

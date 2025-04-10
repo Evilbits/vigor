@@ -50,7 +50,9 @@ func (f *ViFile) ReadFileContents() []string {
 		return nil
 	}
 
-	return strings.Split(string(content), fmt.Sprint(ui.LF))
+	// Remove last newline if file end withs a LF as this will cause an empty line to show up otherwise
+	contentStr := strings.TrimSuffix(string(content), fmt.Sprint(ui.LF))
+	return strings.Split(contentStr, fmt.Sprint(ui.LF))
 }
 
 func (f *ViFile) WriteFile(text []string) error {
