@@ -29,18 +29,26 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 		if ed.cmd.CommandMode {
 			ed.handleCmdCommandEvent(event)
 		} else {
-			ed.handleFileBrowserKey(typedFa, event)
+			ed.handleFileBrowserKey(event)
 		}
 	}
 }
 
-func (ed *Editor) handleFileBrowserKey(fb *ui.FileBrowser, event *tcell.EventKey) {
+func (ed *Editor) handleFileBrowserKey(event *tcell.EventKey) {
+	fb := ed.fileBrowser
 	switch event.Key() {
 	case tcell.KeyEnter:
-		browserFile := fb.GetCurrentFile()
-		file := NewFile(browserFile.Name())
-		ed.LoadFile(file)
-		ed.screen.Grid.ReplaceCurrentFocusedEditableArea(ed.textArea)
+		node := fb.GetCurrentNode()
+		if node.IsDir {
+			err := fb.OpenDir(node)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			file := NewFile(node.Name())
+			ed.LoadFile(file)
+			ed.screen.Grid.ReplaceCurrentFocusedEditableArea(ed.textArea)
+		}
 	default:
 		switch event.Rune() {
 		case 'j':

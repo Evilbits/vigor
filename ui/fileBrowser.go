@@ -1,18 +1,20 @@
-// TODO: A lot of this should be over in editor/
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/gdamore/tcell/v2"
 	"slices"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 type FileNode struct {
 	path           string
-	isDir          bool
+	IsDir          bool
+	IsOpen         bool
 	subFiles       []*FileNode
 	subDirectories []*FileNode
 }
@@ -59,36 +61,60 @@ func (fb *FileBrowser) MoveCursor(moveY int) {
 	}
 }
 
-func (fb *FileBrowser) GetCurrentFile() *FileNode {
+func (fb *FileBrowser) GetCurrentNode() *FileNode {
 	return fb.findNodeByCursorIdx()
 }
 
 func (fb *FileBrowser) loadDir(dir string) (*FileNode, error) {
 	rootDir := &FileNode{
 		path:           dir,
-		isDir:          true,
+		IsDir:          true,
+		IsOpen:         false,
 		subFiles:       []*FileNode{},
 		subDirectories: []*FileNode{},
 	}
-	dirItems, err := os.ReadDir(rootDir.path)
-	if err != nil {
-		return nil, err
-	}
 
-	for _, dirItem := range dirItems {
-		node := &FileNode{
-			path:           dirItem.Name(),
-			isDir:          dirItem.IsDir(),
-			subFiles:       []*FileNode{},
-			subDirectories: []*FileNode{},
-		}
-		if node.isDir {
-			rootDir.subDirectories = append(rootDir.subDirectories, node)
-		} else {
-			rootDir.subFiles = append(rootDir.subFiles, node)
-		}
+	err := rootDir.addChildren()
+	if err != nil {
+		panic(err)
 	}
 	return rootDir, nil
+}
+
+func (fn *FileNode) addChildren() error {
+	dirItems, err := os.ReadDir(fn.path)
+	if err != nil {
+		return err
+	}
+
+	if !fn.IsOpen {
+		for _, dirItem := range dirItems {
+			node := &FileNode{
+				path:           dirItem.Name(),
+				IsDir:          dirItem.IsDir(),
+				IsOpen:         false,
+				subFiles:       []*FileNode{},
+				subDirectories: []*FileNode{},
+			}
+			if node.IsDir {
+				fn.subDirectories = append(fn.subDirectories, node)
+			} else {
+				fn.subFiles = append(fn.subFiles, node)
+			}
+		}
+	} else {
+		fn.subDirectories = []*FileNode{}
+		fn.subFiles = []*FileNode{}
+	}
+	fn.IsOpen = !fn.IsOpen
+	return nil
+}
+
+func (fb *FileBrowser) OpenDir(node *FileNode) error {
+	if !node.IsDir {
+		return errors.New("Tried to expand a file as a directory")
+	}
+	return node.addChildren()
 }
 
 func (fb *FileBrowser) Draw(screen *Screen) {
@@ -98,7 +124,7 @@ func (fb *FileBrowser) Draw(screen *Screen) {
 }
 
 func (fb *FileBrowser) buildTextContent() string {
-	return fb.stringifyDirsAndFiles(fb.rootNode, "")
+	return fb.stringifyDirsAndFiles(fb.rootNode, "", 0)
 }
 
 func (fb *FileBrowser) findNodeByCursorIdx() *FileNode {
@@ -113,15 +139,13 @@ func (fb *FileBrowser) findNodeByCursorIdx() *FileNode {
 		}
 		if currentIdx == targetIdx {
 			result = node
-			return true // Found the target node
+			return true
 		}
 
-		// Process directories first
 		if slices.ContainsFunc(node.subDirectories, traverse) {
-			return true // Target found in directory subtree
+			return true
 		}
 
-		// Then process files
 		if slices.ContainsFunc(node.subFiles, traverse) {
 			return true
 		}
@@ -150,24 +174,27 @@ func (fb *FileBrowser) walkAndCountTreeNodes(node *FileNode, count int) int {
 	return count
 }
 
-func (fb *FileBrowser) stringifyDirsAndFiles(node *FileNode, output string) string {
+func (fb *FileBrowser) stringifyDirsAndFiles(node *FileNode, output string, depth int) string {
 	if node != fb.rootNode {
-		output += renderEntry(node)
+		output += renderEntry(node, depth)
 	}
 	for _, dir := range node.subDirectories {
-		output = fb.stringifyDirsAndFiles(dir, output)
+		output = fb.stringifyDirsAndFiles(dir, output, depth+1)
 	}
 	for _, file := range node.subFiles {
-		output = fb.stringifyDirsAndFiles(file, output)
+		output = fb.stringifyDirsAndFiles(file, output, depth+1)
 	}
 
 	return output
 }
 
-func renderEntry(entry *FileNode) string {
+func renderEntry(entry *FileNode, depth int) string {
 	var output string
+	for i := 1; i < depth; i++ {
+		output += " "
+	}
 	output += entry.path
-	if entry.isDir {
+	if entry.IsDir {
 		output += "/"
 	}
 	output += fmt.Sprint(LF)
