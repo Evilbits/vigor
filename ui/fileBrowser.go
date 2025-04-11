@@ -179,13 +179,19 @@ func (fb *FileBrowser) stringifyDirsAndFiles(node *FileNode, output string, dept
 
 func renderEntry(entry *FileNode, depth int) string {
 	var output string
-	for i := 1; i < depth; i++ {
-		output += " "
-	}
 	output += entry.Name
 	if entry.IsDir {
-		output += "/"
+		var dirIcon string
+		if entry.IsOpen {
+			dirIcon = "▾ "
+		} else {
+			dirIcon = "▸ "
+		}
+		output = dirIcon + output + "/"
 	}
 	output += fmt.Sprint(LF)
+	for i := 1; i < depth; i++ {
+		output = " " + output
+	}
 	return output
 }
