@@ -20,23 +20,36 @@ To run from source simply execute
 * `TextArea`: For rendering and interacting with text.
 * `StatusBar`: For displaying additional metadata in the main IDE view.
 * `Cmd`: Used to run commands. Behaves similar to VIM command-line mode.
+* `FileBrowser`: Renders and interacts with the underlying filesystem.
 
 ## TODO
 There are lots of features that still need to be implemented. This is a non-exhaustive list:
-* Reading a config when initiating the `Editor`
+* Support directories when browsing files
 * Linenumbers in `TextArea`
-* Navigating between files
 * Buffer file reads
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
 * Undo/redo
 * x axis scroll within file
 * LSP integration and syntax highlighting
+* Reading a config when initiating the `Editor`
 
-## Implemented
+## Implemented behaviour
 * Smart cursor behaviour.
     * Keeps track of x position when moving between lines of different length.
-    * Vim cursor movement motions such as `$`, `0`, and going to start (`g`) and end (`G`) of file.
 * Navigating a full file with y axis scroll (currently x axis is not supported).
 * Inserting and removing characters. 
-* Your favourite VIM commands like `:q` and `:w`.
-* File browsing using `:e`
+
+## Implemented commands
+# Visual mode
+* `h`, `j`, `k`, `l`: Cursor movement
+* `$`: Go to end of line
+* `0`: Go to beginning of line
+* `g`: Go to start of file
+* `G`: Go to end of file
+* `i, a`: Enter insert mode
+* `:` - Enter command mode
+
+# Command mode
+* `q`, `quit`: Quit editor without saving 
+* `w`, `write`: Write changes to file
+* `e`, `edit`: Enter file browser
