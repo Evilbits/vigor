@@ -45,7 +45,7 @@ func (ed *Editor) handleFileBrowserKey(event *tcell.EventKey) {
 				panic(err)
 			}
 		} else {
-			file := NewFile(node.Name())
+			file := NewFile(node.Path)
 			ed.LoadFile(file)
 			ed.screen.Grid.ReplaceCurrentFocusedEditableArea(ed.textArea)
 		}

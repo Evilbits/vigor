@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"slices"
 
@@ -12,19 +11,12 @@ import (
 )
 
 type FileNode struct {
-	path           string
+	Path           string
+	Name           string
 	IsDir          bool
 	IsOpen         bool
 	subFiles       []*FileNode
 	subDirectories []*FileNode
-}
-
-func (f *FileNode) Name() string {
-	if strings.Contains(f.path, "/") {
-		splitPath := strings.Split(f.path, "/")
-		return splitPath[len(splitPath)-1]
-	}
-	return f.path
 }
 
 type FileBrowser struct {
@@ -67,7 +59,7 @@ func (fb *FileBrowser) GetCurrentNode() *FileNode {
 
 func (fb *FileBrowser) loadDir(dir string) (*FileNode, error) {
 	rootDir := &FileNode{
-		path:           dir,
+		Path:           dir,
 		IsDir:          true,
 		IsOpen:         false,
 		subFiles:       []*FileNode{},
@@ -82,7 +74,7 @@ func (fb *FileBrowser) loadDir(dir string) (*FileNode, error) {
 }
 
 func (fn *FileNode) addChildren() error {
-	dirItems, err := os.ReadDir(fn.path)
+	dirItems, err := os.ReadDir(fn.Path)
 	if err != nil {
 		return err
 	}
@@ -90,7 +82,8 @@ func (fn *FileNode) addChildren() error {
 	if !fn.IsOpen {
 		for _, dirItem := range dirItems {
 			node := &FileNode{
-				path:           dirItem.Name(),
+				Name:           dirItem.Name(),
+				Path:           fmt.Sprintf("%v/%v", fn.Path, dirItem.Name()),
 				IsDir:          dirItem.IsDir(),
 				IsOpen:         false,
 				subFiles:       []*FileNode{},
@@ -193,7 +186,7 @@ func renderEntry(entry *FileNode, depth int) string {
 	for i := 1; i < depth; i++ {
 		output += " "
 	}
-	output += entry.path
+	output += entry.Name
 	if entry.IsDir {
 		output += "/"
 	}

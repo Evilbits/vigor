@@ -16,7 +16,7 @@ type ViFile struct {
 func NewFile(path string) *ViFile {
 	file, err := readFile(path)
 	if err != nil {
-		panic("Tried opening non existant file")
+		panic(fmt.Sprintf("Tried opening non existant file: %v", path))
 	}
 	absPath, err := filepath.Abs(file.Name())
 	if err != nil {

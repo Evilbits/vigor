@@ -24,7 +24,6 @@ To run from source simply execute
 
 ## TODO
 There are lots of features that still need to be implemented. This is a non-exhaustive list:
-* Support directories when browsing files
 * Linenumbers in `TextArea`
 * Buffer file reads
 * When reading a file store text as a [Rope](https://en.wikipedia.org/wiki/Rope_(data_structure))
@@ -38,6 +37,7 @@ There are lots of features that still need to be implemented. This is a non-exha
     * Keeps track of x position when moving between lines of different length.
 * Navigating a full file with y axis scroll (currently x axis is not supported).
 * Inserting and removing characters. 
+* Full browsing of a repository with unlimited file nesting.
 
 ## Implemented commands
 # Visual mode
