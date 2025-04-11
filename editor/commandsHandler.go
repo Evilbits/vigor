@@ -37,8 +37,8 @@ func (ed *Editor) HandleKey(event *tcell.EventKey) {
 func (ed *Editor) handleFileBrowserKey(fb *ui.FileBrowser, event *tcell.EventKey) {
 	switch event.Key() {
 	case tcell.KeyEnter:
-		fileDirEntry := fb.GetCurrentFile()
-		file := NewFile(fileDirEntry.Name())
+		browserFile := fb.GetCurrentFile()
+		file := NewFile(browserFile.Name())
 		ed.LoadFile(file)
 		ed.screen.Grid.ReplaceCurrentFocusedEditableArea(ed.textArea)
 	default:

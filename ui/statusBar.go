@@ -28,6 +28,7 @@ func statusBarSeparator() string {
 func (sb *StatusBar) Draw(screen *Screen) {
 	ta := sb.monitoredTextArea
 	statusBarStr := ""
+	// TODO: Integrate with file browser
 	if sb.DebugEnabled {
 		statusBarStr += fmt.Sprintf("(%v [%v], %v, {%v})", ta.cursorX, ta.lastUserXPos, ta.cursorY, ta.getCursorLocInText())
 	} else {
