@@ -19,6 +19,39 @@ type FileNode struct {
 	subDirectories []*FileNode
 }
 
+func (fn *FileNode) OpenDir() error {
+	if !fn.IsDir {
+		return errors.New("Tried to expand a file as a directory")
+	}
+	dirItems, err := os.ReadDir(fn.Path)
+	if err != nil {
+		return err
+	}
+
+	if !fn.IsOpen {
+		for _, dirItem := range dirItems {
+			node := &FileNode{
+				Name:           dirItem.Name(),
+				Path:           fmt.Sprintf("%v/%v", fn.Path, dirItem.Name()),
+				IsDir:          dirItem.IsDir(),
+				IsOpen:         false,
+				subFiles:       []*FileNode{},
+				subDirectories: []*FileNode{},
+			}
+			if node.IsDir {
+				fn.subDirectories = append(fn.subDirectories, node)
+			} else {
+				fn.subFiles = append(fn.subFiles, node)
+			}
+		}
+	} else {
+		fn.subDirectories = []*FileNode{}
+		fn.subFiles = []*FileNode{}
+	}
+	fn.IsOpen = !fn.IsOpen
+	return nil
+}
+
 type FileBrowser struct {
 	*Box
 
@@ -66,48 +99,11 @@ func (fb *FileBrowser) loadDir(dir string) (*FileNode, error) {
 		subDirectories: []*FileNode{},
 	}
 
-	err := rootDir.addChildren()
+	err := rootDir.OpenDir()
 	if err != nil {
 		panic(err)
 	}
 	return rootDir, nil
-}
-
-func (fn *FileNode) addChildren() error {
-	dirItems, err := os.ReadDir(fn.Path)
-	if err != nil {
-		return err
-	}
-
-	if !fn.IsOpen {
-		for _, dirItem := range dirItems {
-			node := &FileNode{
-				Name:           dirItem.Name(),
-				Path:           fmt.Sprintf("%v/%v", fn.Path, dirItem.Name()),
-				IsDir:          dirItem.IsDir(),
-				IsOpen:         false,
-				subFiles:       []*FileNode{},
-				subDirectories: []*FileNode{},
-			}
-			if node.IsDir {
-				fn.subDirectories = append(fn.subDirectories, node)
-			} else {
-				fn.subFiles = append(fn.subFiles, node)
-			}
-		}
-	} else {
-		fn.subDirectories = []*FileNode{}
-		fn.subFiles = []*FileNode{}
-	}
-	fn.IsOpen = !fn.IsOpen
-	return nil
-}
-
-func (fb *FileBrowser) OpenDir(node *FileNode) error {
-	if !node.IsDir {
-		return errors.New("Tried to expand a file as a directory")
-	}
-	return node.addChildren()
 }
 
 func (fb *FileBrowser) Draw(screen *Screen) {

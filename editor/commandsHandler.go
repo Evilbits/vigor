@@ -40,7 +40,7 @@ func (ed *Editor) handleFileBrowserKey(event *tcell.EventKey) {
 	case tcell.KeyEnter:
 		node := fb.GetCurrentNode()
 		if node.IsDir {
-			err := fb.OpenDir(node)
+			err := node.OpenDir()
 			if err != nil {
 				panic(err)
 			}
