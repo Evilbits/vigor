@@ -32,7 +32,7 @@ func (editor *Editor) LoadFile(file *ViFile) {
 	text := file.ReadFileContents()
 
 	editor.activeFile = file
-	editor.textArea.TextContent = text
+	editor.textArea.LoadTextContent(text)
 	editor.statusBar.ActiveFileName = file.GetFileName()
 }
 

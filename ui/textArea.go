@@ -55,6 +55,13 @@ func NewTextArea() *TextArea {
 	return textArea
 }
 
+func (ta *TextArea) LoadTextContent(content []string) {
+	ta.TextContent = content
+	ta.cursorX = 0
+	ta.cursorY = 0
+	ta.textContentOffset = 0
+}
+
 func (ta *TextArea) MoveCursor(moveX int, moveY int) {
 	x, y := ta.GetXY()
 	// If going out of bounds
